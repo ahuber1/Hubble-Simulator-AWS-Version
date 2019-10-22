@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.jetbrains:annotations:17.0.0'
+    implementation 'com.amazonaws:aws-lambda-java-core:1.1.0'
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.9.3'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.627'
+    testImplementation 'junit:junit:4.12'
+    testCompile group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.13.1'
+}
+
+javadoc {
+    title = "Satellite Simulator"
+    options.setHeader("Satellite Simulator")
+}
