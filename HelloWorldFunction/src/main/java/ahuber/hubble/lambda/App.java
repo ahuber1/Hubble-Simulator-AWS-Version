@@ -2,26 +2,22 @@ package ahuber.hubble.lambda;
 
 import ahuber.hubble.Receiver;
 import ahuber.hubble.Satellite;
+import ahuber.hubble.SatelliteImageWriter;
 import ahuber.hubble.SatelliteProcessor;
-import ahuber.hubble.adt.IntArrayWrapper;
 import ahuber.hubble.adt.IntBuffer;
-import com.amazonaws.SdkClientException;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -95,44 +91,6 @@ public class App implements RequestStreamHandler {
             throw new RuntimeException("No image");
         }
 
-        ImageIO.write(image, "jpg", output);
-        uploadToS3(image);
-    }
-
-    private void uploadToS3(BufferedImage image) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageIO.write(image, "jpg", outputStream);
-        byte[] bytes = outputStream.toByteArray();
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-
-        Regions clientRegion = Regions.US_EAST_1;
-        String bucketName = "danshi";
-
-        try {
-            //This code expects that you have AWS credentials set up per:
-            // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html
-            AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                    .withRegion(clientRegion)
-                    .build();
-
-            // Upload a file as a new object with ContentType and title specified.
-
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType("image/jpeg");
-            metadata.addUserMetadata("x-amz-meta-title", getName());
-            PutObjectRequest request = new PutObjectRequest(bucketName, getName(), inputStream, metadata);
-
-            s3Client.putObject(request);
-        } catch (SdkClientException e) {
-            // The call was transmitted successfully, but Amazon S3 couldn't process
-            // it, so it returned an error response.
-            //
-            // OR
-            //
-            // Amazon S3 couldn't be contacted for a response, or the client
-            // couldn't parse the response from Amazon S3.
-            e.printStackTrace();
-        }
-
+        SatelliteImageWriter.uploadToS3(image, Regions.US_EAST_1, "danshi", getName());
     }
 }
