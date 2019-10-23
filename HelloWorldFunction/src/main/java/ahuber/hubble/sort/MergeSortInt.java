@@ -1,10 +1,8 @@
 package ahuber.hubble.sort;
 
-import ahuber.hubble.Utils;
 import ahuber.hubble.adt.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -75,13 +73,31 @@ public final class MergeSortInt {
     }
 
     /**
+     * Merges two {@code int} arrays sorted in ascending order into one {@code int} array sorted in ascending order
+     * @param array1 The first {@code int} array sorted in ascending order.
+     * @param array2 THe second {@code int} array sorted in ascending order.
+     * @return An {@code int} array containing the elements in the two {@code int} arrays sorted in ascending order.
+     * @throws NullPointerException If either array is {@code null}
+     */
+    @NotNull
+    public static int[] merge(int[] array1, int[] array2) {
+        Objects.requireNonNull(array1, "array1 cannot be null");
+        Objects.requireNonNull(array2, "array2 cannot be null");
+        int[] combined = new int[array1.length + array2.length];
+        System.arraycopy(array1, 0, combined, 0, array1.length);
+        System.arraycopy(array2, 0, combined, array1.length, array2.length);
+        merge(combined, 0, array1.length, combined.length - 1);
+        return combined;
+    }
+
+    /**
      * Merges two "subarrays" together
      * @param array the array to "merge"
      * @param startInclusive the smallest index of the "left subarray"
      * @param middle the largest index of the "left subarray"
      * @param endInclusive the largest index of the "right subarray"
      */
-    private  static void merge(int[] array, int startInclusive, int middle, int endInclusive) {
+    private static void merge(int[] array, int startInclusive, int middle, int endInclusive) {
 
         // the sorted copy of this "subarray"
         int[] a = new int[endInclusive - startInclusive + 1];

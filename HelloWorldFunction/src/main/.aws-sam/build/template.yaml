@@ -1,8 +1,0 @@
-Resources:
-  Function:
-    Properties:
-      CodeUri: Function
-      Handler: ahuber.hubble.lambda.App
-      Runtime: java8
-      Timeout: 900
-    Type: AWS::Serverless::Function
