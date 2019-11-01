@@ -480,7 +480,7 @@ public class BufferBase<T, C extends BufferBase<T, C>> implements Collection<T> 
      * The worker function for the {@link #take(int, Object[])} method or any derivative of that method implemented
      * in derived classes.
      * @param n The number of elements to take from the buffer. This value is clamped in the range [0, {@link #size()}]
-     * @param arrayCopySupplier A lambda function that takes the value of {@code n} after it has been clamped into
+     * @param arrayCopySupplier A aws function that takes the value of {@code n} after it has been clamped into
      *                          the range [0, {@link #size()}] (let this be {@code clampedN}) and returns an
      *                          {@link ArrayWrapper} of length {@code clampedN} that contains the first
      *                          {@code clampedN} elements from the buffer.

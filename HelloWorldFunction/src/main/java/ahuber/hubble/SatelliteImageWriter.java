@@ -1,20 +1,10 @@
 package ahuber.hubble;
 
-import com.amazonaws.SdkClientException;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -106,47 +96,4 @@ public final class SatelliteImageWriter {
         return (byte) ((value - minInteger) / (maxInteger - minInteger) * (Byte.MAX_VALUE - Byte.MIN_VALUE) + Byte.MIN_VALUE);
     }
     //endregion
-
-    // region Upload to AWS S3
-
-    /**
-     * Uploads the provided {@link BufferedImage} to AWS S3.
-     * @param image The {@link BufferedImage} to upload.
-     * @param region The region to upload the {@link BufferedImage} to.
-     * @param bucketName The name of the S3 bucket to upload the image to.
-     * @param imageName The name of the image to upload to S3.
-     * @throws IOException If an I/O error occurred.
-     * @throws SdkClientException If any of the following occurred:
-     * <ul>
-     *     <li>
-     *         The call was transmitted successfully, but Amazon S3 couldn't process it, so it returned an error
-     *         response,
-     *     </li>
-     *     <li>Amazon S3 couldn't be contacted for a response, or</li>
-     *     <li>The client couldn't parse the response from S3.</li>
-     * </ul>
-     */
-    public static void uploadToS3(BufferedImage image, Regions region, String bucketName, String imageName) throws IOException, SdkClientException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageIO.write(image, "jpg", outputStream);
-        byte[] bytes = outputStream.toByteArray();
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-
-        //This code expects that you have AWS credentials set up per:
-        // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html
-        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                .withRegion(region)
-                .build();
-
-        // Upload a file as a new object with ContentType and title specified.
-
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType("image/jpeg");
-        metadata.addUserMetadata("x-amz-meta-title", imageName);
-        PutObjectRequest request = new PutObjectRequest(bucketName, imageName, inputStream, metadata);
-
-        s3Client.putObject(request);
-    }
-
-    // endregion Upload to AWS S3
 }
