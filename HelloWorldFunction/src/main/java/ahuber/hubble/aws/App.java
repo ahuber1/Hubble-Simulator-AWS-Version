@@ -6,9 +6,11 @@ import ahuber.hubble.SatelliteProcessor;
 import ahuber.hubble.Utils;
 import ahuber.hubble.adt.IntBuffer;
 import com.amazonaws.jmespath.ObjectMapperSingleton;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.services.s3.AmazonS3URI;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -20,8 +22,23 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-@SuppressWarnings("unused")
 public class App implements RequestStreamHandler {
+    private Regions emrRegion = Regions.US_EAST_1;
+    private final String satelliteName;
+    private final AmazonS3URI logUri;
+    private final AmazonS3URI sparkJobConfigUri;
+    private final AmazonS3URI sparkJobJarUri;
+    private final String[] sparkJobJarArgs;
+
+    public App() {
+        satelliteName = generateName();
+        logUri = new AmazonS3URI(S3Helpers.createHadoopLogFolderUri(satelliteName));
+        sparkJobConfigUri = new AmazonS3URI(S3Helpers.createSparkJobConfigUri(satelliteName));
+        sparkJobJarUri = new AmazonS3URI(S3Helpers.createSparkJobJarUri("TODO")); // TODO
+        sparkJobJarArgs = new String[] { "TODO" }; // TODO
+    }
+
+
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
         // Convert the input stream to a byte array
@@ -39,7 +56,6 @@ public class App implements RequestStreamHandler {
         int t = (int) Math.pow(10, configuration.j);
         int receiverThreshold = (int) Math.pow(n, 2);
         int bufferSize = receiverThreshold * 2;
-        String name = generateName();
         Consumer<String> logFunction;
 
         if (context == null) {
@@ -52,12 +68,13 @@ public class App implements RequestStreamHandler {
         }
 
         logFunction.accept(String.format("Running simulation: \"{%s}\"\n\tn = {%d}, t = {%d}, bufferSize = {%d}, " +
-                "receiverThreshold = {%d}", name, n, t, bufferSize, receiverThreshold));
+                "receiverThreshold = {%d}", satelliteName, n, t, bufferSize, receiverThreshold));
 
         // Create the buffer, satellite, processor, and receiver
         IntBuffer buffer = new IntBuffer(bufferSize);
         Satellite satellite = new Satellite(buffer);
-        SatelliteProcessor processor = new SatelliteProcessor(t, name);
+        SatelliteProcessor processor = new SatelliteProcessor(satelliteName, receiverThreshold, emrRegion, logUri,
+                sparkJobConfigUri, sparkJobJarUri, sparkJobJarArgs);
         Receiver receiver = new Receiver(buffer, processor, receiverThreshold);
 
         // Create the threads

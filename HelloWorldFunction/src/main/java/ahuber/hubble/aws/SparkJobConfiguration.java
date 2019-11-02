@@ -18,7 +18,7 @@ public class SparkJobConfiguration {
 
     @Contract(pure = true)
     public SparkJobConfiguration(@NotNull  String name, int threshold, int...data) {
-        this.name = Objects.requireNonNull(name, "The name cannot be null.");
+        this.satelliteName = Objects.requireNonNull(name, "The name cannot be null.");
         this.threshold = threshold;
         this.data = data;
     }
@@ -39,5 +39,5 @@ public class SparkJobConfiguration {
      * The name of the Satellite session that produced {@link #data} and specified the {@link #threshold}
      */
     @SuppressWarnings("WeakerAccess")
-    public String name;
+    public String satelliteName;
 }

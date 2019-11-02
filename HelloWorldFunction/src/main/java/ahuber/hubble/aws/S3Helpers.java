@@ -5,9 +5,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3URI;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.StringInputStream;
 
 import javax.imageio.ImageIO;
@@ -186,6 +184,16 @@ public final class S3Helpers {
 
     // endregion upload
 
+    // region Download
+
+    public static S3Object download(Regions region, String bucketName, String key) {
+        AmazonS3 s3Client = getS3Client(region);
+        GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
+        return s3Client.getObject(getObjectRequest);
+    }
+
+    // endregion Download
+
     /**
      * Creates and returns an {@link AmazonS3} client for uploading files to the specified AWS Region to Amazon S3.
      * @param region The AWS Region.
@@ -199,4 +207,28 @@ public final class S3Helpers {
                 .withRegion(region)
                 .build();
     }
+
+    // region Urls
+
+    public static String createS3Uri(String bucket, String path) {
+        return String.format("s3://%s/%s", bucket, path);
+    }
+
+    public static String createHadoopLogFolderUri(String satelliteName) {
+        return createS3Uri("hadoop_logs", String.format("java/%s/", satelliteName));
+    }
+
+    public static String createSparkJobConfigUri(String satelliteName) {
+        return createS3Uri("spark_job_configs", String.format("java/%s.json", satelliteName));
+    }
+
+    public static String createSparkJobJarUri(String jarPath) {
+        return createS3Uri("danshi", jarPath);
+    }
+
+    public static String createImageUri(String satelliteName) {
+        return createS3Uri("satellite_images", String.format("java/%s.jpg", satelliteName));
+    }
+
+    // endregion Urls
 }

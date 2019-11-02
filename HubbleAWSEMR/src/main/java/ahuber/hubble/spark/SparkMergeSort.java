@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SparkMergeSort {
-    public static void sort(int[] array, int threshold) {
+    public static int[] sort(int[] array, int threshold) {
         SparkConf sparkConf = new SparkConf().setAppName("Hubble_AWS_EMR").setMaster("local");
         JavaSparkContext jsc = new JavaSparkContext(sparkConf);
         int[] leftHalf = Arrays.copyOfRange(array, 0, array.length / 2);
@@ -22,9 +22,7 @@ public class SparkMergeSort {
             MergeSortInt.sort(half, threshold);
             return half;
         }).reduce((Function2<int[], int[], int[]>) MergeSortInt::merge);
-
-        // TODO Convert to image
-
         jsc.stop();
+        return sortedData;
     }
 }

@@ -4,6 +4,9 @@ import org.javatuples.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -132,5 +135,25 @@ public final class Utils {
         }
 
         throw new NullPointerException("Both the provided value and default value are null.");
+    }
+
+    /**
+     * Reads all characters from the {@link Reader}, and returns those characters as a string.
+     * @param reader The {@link Reader}
+     * @return The string containing all the characters in the {@link Reader}
+     * @throws IOException If an I/O error occurs.
+     */
+    @Contract("null -> fail")
+    @NotNull
+    public static String readAllAsString(Reader reader) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        Objects.requireNonNull(reader, "'reader' cannot be null.");
+        int charCode;
+
+        while ((charCode = reader.read()) != -1) {
+            builder.append(charCode);
+        }
+
+        return builder.toString();
     }
 }
