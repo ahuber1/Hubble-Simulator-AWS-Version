@@ -1,6 +1,6 @@
 package ahuber.hubble;
 
-import ahuber.hubble.lambda.App;
+import ahuber.hubble.aws.App;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -15,7 +15,7 @@ public class Driver {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         app.handleRequest(input, output, null);
 
-        File file = new File(app.getName() + ".jpg");
+        File file = new File(app.getSatelliteName() + ".jpg");
         System.out.println(file.getAbsolutePath());
         byte[] data = output.toByteArray();
         ByteArrayInputStream input2 = new ByteArrayInputStream(data);

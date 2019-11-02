@@ -3,6 +3,7 @@ package ahuber.hubble.spark;
 import ahuber.hubble.SatelliteImageWriter;
 import ahuber.hubble.Utils;
 import ahuber.hubble.aws.S3Helpers;
+import ahuber.hubble.aws.LocalizedS3ObjectId;
 import ahuber.hubble.aws.SparkJobConfiguration;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3URI;
@@ -31,9 +32,9 @@ public class SparkDriver {
         SparkJobConfiguration jobConfiguration = getSparkJobConfiguration(uri, region);
         int[] data = SparkMergeSort.sort(jobConfiguration.data, jobConfiguration.threshold);
         BufferedImage bufferedImage = SatelliteImageWriter.writeGreyscaleImage(data);
-        String imageUri = S3Helpers.createImageUri(jobConfiguration.satelliteName);
-        S3Helpers.uploadImage(bufferedImage, new AmazonS3URI(imageUri));
-        System.out.printf("Image uploaded to %s\n", imageUri);
+        LocalizedS3ObjectId imageId = S3Helpers.createImageId(jobConfiguration.satelliteName);
+        S3Helpers.uploadImage(bufferedImage, imageId);
+        System.out.printf("Image uploaded to %s\n", imageId);
     }
 
     @NotNull

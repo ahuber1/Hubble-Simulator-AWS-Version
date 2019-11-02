@@ -32,12 +32,15 @@ public class App implements RequestStreamHandler {
 
     public App() {
         satelliteName = generateName();
-        logUri = new AmazonS3URI(S3Helpers.createHadoopLogFolderUri(satelliteName));
-        sparkJobConfigUri = new AmazonS3URI(S3Helpers.createSparkJobConfigUri(satelliteName));
-        sparkJobJarUri = new AmazonS3URI(S3Helpers.createSparkJobJarUri("TODO")); // TODO
+        logUri = new AmazonS3URI(S3Helpers.createHadoopLogFolderId(satelliteName));
+        sparkJobConfigUri = new AmazonS3URI(S3Helpers.createSparkJobConfigId(satelliteName));
+        sparkJobJarUri = new AmazonS3URI(S3Helpers.createSparkJobJarId("TODO")); // TODO
         sparkJobJarArgs = new String[] { "TODO" }; // TODO
     }
 
+    public String getSatelliteName() {
+        return satelliteName;
+    }
 
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {

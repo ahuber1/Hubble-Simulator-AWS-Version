@@ -4,9 +4,10 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.StringInputStream;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -35,11 +36,11 @@ public final class S3Helpers {
      * @return A {@link PutObjectResult} from the S3 SDK containing information about the upload that was just
      * performed.
      */
-    public static PutObjectResult uploadImage(BufferedImage image, AmazonS3URI location)
+    public static PutObjectResult uploadImage(BufferedImage image, LocalizedS3ObjectId location)
             throws IOException, SdkClientException {
 
         return uploadImage(image,
-                Regions.fromName(Objects.requireNonNull(location, "'location' cannot be null").getRegion()),
+                Objects.requireNonNull(location, "'location' cannot be null").getRegion(),
                 location.getBucket(), location.getKey());
     }
 
@@ -84,9 +85,9 @@ public final class S3Helpers {
      * @throws NullPointerException If {@code location} is {@code null}
      * @throws UnsupportedEncodingException If there was an error encoding the JSON string as a {@link StringInputStream}
      */
-    public static PutObjectResult uploadJson(String json, AmazonS3URI location) throws UnsupportedEncodingException {
+    public static PutObjectResult uploadJson(String json, LocalizedS3ObjectId location) throws UnsupportedEncodingException {
         return uploadJson(json,
-                Regions.fromName(Objects.requireNonNull(location, "'location' cannot be null.").getRegion()),
+                Objects.requireNonNull(location, "'location' cannot be null.").getRegion(),
                 location.getBucket(), location.getKey());
     }
 
@@ -119,9 +120,9 @@ public final class S3Helpers {
      * @throws NullPointerException If {@code location} is {@code null}
      * @throws UnsupportedEncodingException If there was an error encoding the string content as a {@link StringInputStream}
      */
-    public static PutObjectResult upload(String content, AmazonS3URI location, String contentType) throws UnsupportedEncodingException {
+    public static PutObjectResult upload(String content, LocalizedS3ObjectId location, String contentType) throws UnsupportedEncodingException {
         return upload(content,
-                Regions.fromName(Objects.requireNonNull(location, "'location' cannot be null.").getRegion()),
+                Objects.requireNonNull(location, "'location' cannot be null.").getRegion(),
                 location.getBucket(), location.getKey(), contentType);
     }
 
@@ -152,9 +153,9 @@ public final class S3Helpers {
      *         performed.
      * @throws NullPointerException If {@code location} is {@code null}
      */
-    public static PutObjectResult upload(InputStream inputStream, AmazonS3URI location, String contentType) {
+    public static PutObjectResult upload(InputStream inputStream, LocalizedS3ObjectId location, String contentType) {
         return upload(inputStream,
-                Regions.fromName(Objects.requireNonNull(location, "'location' cannot be null").getRegion()),
+                Objects.requireNonNull(location, "'location' cannot be null").getRegion(),
                 location.getBucket(), location.getKey(), contentType);
     }
 
@@ -214,20 +215,28 @@ public final class S3Helpers {
         return String.format("s3://%s/%s", bucket, path);
     }
 
-    public static String createHadoopLogFolderUri(String satelliteName) {
-        return createS3Uri("hadoop_logs", String.format("java/%s/", satelliteName));
+    @NotNull
+    @Contract("_ -> new")
+    public static LocalizedS3ObjectId createHadoopLogFolderId(String satelliteName) {
+        return new LocalizedS3ObjectId(Regions.US_EAST_1, "hadoop_logs", String.format("java/%s/", satelliteName));
     }
 
-    public static String createSparkJobConfigUri(String satelliteName) {
-        return createS3Uri("spark_job_configs", String.format("java/%s.json", satelliteName));
+    @NotNull
+    @Contract("_ -> new")
+    public static LocalizedS3ObjectId createSparkJobConfigId(String satelliteName) {
+        return new LocalizedS3ObjectId(Regions.US_EAST_1, "spark_job_configs", String.format("java/%s.json", satelliteName));
     }
 
-    public static String createSparkJobJarUri(String jarPath) {
-        return createS3Uri("danshi", jarPath);
+    @NotNull
+    @Contract("_ -> new")
+    public static LocalizedS3ObjectId createSparkJobJarId(String jarPath) {
+        return new LocalizedS3ObjectId(Regions.US_EAST_1, "danshi", jarPath);
     }
 
-    public static String createImageUri(String satelliteName) {
-        return createS3Uri("satellite_images", String.format("java/%s.jpg", satelliteName));
+    @NotNull
+    @Contract("_ -> new")
+    public static LocalizedS3ObjectId createImageId(String satelliteName) {
+        return new LocalizedS3ObjectId(Regions.US_EAST_1, "satellite_images", String.format("java/%s.jpg", satelliteName));
     }
 
     // endregion Urls

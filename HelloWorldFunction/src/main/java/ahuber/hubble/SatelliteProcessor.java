@@ -2,6 +2,7 @@ package ahuber.hubble;
 
 import ahuber.hubble.adt.IntArrayWrapper;
 import ahuber.hubble.aws.S3Helpers;
+import ahuber.hubble.aws.LocalizedS3ObjectId;
 import ahuber.hubble.aws.SparkJobConfiguration;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
@@ -13,7 +14,6 @@ import com.amazonaws.services.elasticmapreduce.AmazonElasticMapReduce;
 import com.amazonaws.services.elasticmapreduce.AmazonElasticMapReduceClientBuilder;
 import com.amazonaws.services.elasticmapreduce.model.*;
 import com.amazonaws.services.elasticmapreduce.util.StepFactory;
-import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,21 +32,21 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
     private final Semaphore semaphore = new Semaphore(1);
     @NotNull private final String satelliteName;
     private final int threshold;
-    @NotNull private final AmazonS3URI sparkJobConfigUri;
+    @NotNull private final LocalizedS3ObjectId sparkJobConfigLocation;
     private final Regions emrRegion;
-    private final AmazonS3URI logUri;
-    private final AmazonS3URI sparkJobUri;
-    private final String[] sparkJobJarArgs;
+    @NotNull private final LocalizedS3ObjectId logFolderLocation;
+    @NotNull private final LocalizedS3ObjectId sparkJobJarLocation;
+    @NotNull private final String[] sparkJobJarArgs;
 
-    public SatelliteProcessor(String satelliteName, int threshold, Regions emrRegion, AmazonS3URI logUri,
-            AmazonS3URI sparkJobConfigUri, AmazonS3URI sparkJobJarUri, String...sparkJobJarArgs) {
+    public SatelliteProcessor(String satelliteName, int threshold, Regions emrRegion, LocalizedS3ObjectId logFolderLocation,
+            LocalizedS3ObjectId sparkJobConfigLocation, LocalizedS3ObjectId sparkJobJarLocation, String...sparkJobJarArgs) {
 
         this.satelliteName = Objects.requireNonNull(satelliteName, "'satelliteName' cannot be null.");
         this.threshold = threshold;
-        this.sparkJobConfigUri = Objects.requireNonNull(sparkJobConfigUri, "'sparkJobConfigUri' cannot be null.");
+        this.sparkJobConfigLocation = Objects.requireNonNull(sparkJobConfigLocation, "'sparkJobConfigUri' cannot be null.");
         this.emrRegion = Objects.requireNonNull(emrRegion, "'emrRegion' cannot be null.");
-        this.logUri = Objects.requireNonNull(logUri, "'logUri' cannot be null.");
-        this.sparkJobUri = Objects.requireNonNull(sparkJobJarUri, "'sparkJobJarUri' cannot be null.");
+        this.logFolderLocation = Objects.requireNonNull(logFolderLocation, "'logUri' cannot be null.");
+        this.sparkJobJarLocation = Objects.requireNonNull(sparkJobJarLocation, "'sparkJobJarUri' cannot be null.");
         this.sparkJobJarArgs = Objects.requireNonNull(sparkJobJarArgs, "'sparkJobJarArgs' cannot be null.");
 
         semaphore.acquireUninterruptibly();
@@ -70,16 +70,16 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
         SparkJobConfiguration configuration = new SparkJobConfiguration(satelliteName, threshold, array);
 
         try {
-            uploadSparkJobConfigurationToAmazonS3(configuration, sparkJobConfigUri);
+            uploadSparkJobConfigurationToAmazonS3(configuration, sparkJobConfigLocation);
         } catch (IOException e) {
             String message = String.format("Unable to upload %s to Amazon S3 at %s", configuration,
-                    sparkJobConfigUri);
+                    sparkJobConfigLocation);
             throw new RuntimeException(message, e);
         }
 
         System.out.printf("%s was successfully converted to JSON and uploaded to Amazon S3.\n", configuration);
 
-        RunJobFlowResult runJobFlowResult = startHadoopCluster(emrRegion, logUri, sparkJobUri, sparkJobJarArgs);
+        RunJobFlowResult runJobFlowResult = startHadoopCluster(emrRegion, logFolderLocation, sparkJobJarLocation, sparkJobJarArgs);
         System.out.printf("An Amazon ECR job request was submitted and was approved. Job Flow Id is %s.\n",
                 runJobFlowResult.getJobFlowId());
 
@@ -102,8 +102,8 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
 
 
 
-    private RunJobFlowResult startHadoopCluster(Regions emrRegion, AmazonS3URI logUri, AmazonS3URI sparkJobJarUri,
-            String... sparkJobJarArgs) {
+    private RunJobFlowResult startHadoopCluster(Regions emrRegion, LocalizedS3ObjectId logUri,
+            LocalizedS3ObjectId sparkJobJarUri, String... sparkJobJarArgs) {
 
         AWSCredentials credentials;
 
@@ -120,7 +120,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
                 .build();
 
         HadoopJarStepConfig hadoopJarStep = new HadoopJarStepConfig()
-                .withJar(sparkJobJarUri.getURI().toString())
+                .withJar(sparkJobJarUri.getStringUri())
                 .withArgs(sparkJobJarArgs);
 
         StepConfig customJarStep = new StepConfig()
@@ -144,7 +144,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
                 .withReleaseLabel("emr-5.27.0")
                 .withSteps(steps)
                 .withApplications(sparkApplication)
-                .withLogUri(logUri.getURI().toString())
+                .withLogUri(logUri.getStringUri())
                 .withServiceRole("EMR_DefaultRole")
                 .withJobFlowRole("EMR_EC2_DefaultRole")
                 .withInstances(instancesConfig);
@@ -192,7 +192,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
     @SuppressWarnings("UnusedReturnValue")
     @NotNull
     private PutObjectResult uploadSparkJobConfigurationToAmazonS3(@NotNull SparkJobConfiguration configuration,
-            AmazonS3URI sparkJobConfigurationS3Location) throws IOException {
+            LocalizedS3ObjectId sparkJobConfigurationS3Location) throws IOException {
         // Null checking
         Objects.requireNonNull(configuration, "'configuration' cannot be null.");
 
