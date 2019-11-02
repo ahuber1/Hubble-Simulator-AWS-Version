@@ -1,1 +1,3 @@
 rootProject.name = 'HubbleAWSEMR'
+include ':HelloWorldFunction'
+project(':HelloWorldFunction').projectDir = new File(settingsDir, '../HelloWorldFunction')

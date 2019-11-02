@@ -1,5 +1,6 @@
 package ahuber.hubble.aws;
 
+import ahuber.hubble.Utils;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -187,13 +188,39 @@ public final class S3Helpers {
 
     // region Download
 
+    public static S3Object download(String bucketName, String key) {
+        AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
+        return download(s3Client, bucketName, key);
+    }
+
     public static S3Object download(Regions region, String bucketName, String key) {
         AmazonS3 s3Client = getS3Client(region);
+        return download(s3Client, bucketName, key);
+    }
+
+    private static S3Object download(AmazonS3 s3Client, String bucketName, String key) {
         GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
-        return s3Client.getObject(getObjectRequest);
+        return Objects.requireNonNull(s3Client, "'s3Client' cannot be null.").getObject(getObjectRequest);
     }
 
     // endregion Download
+
+    // region Read
+
+    @NotNull
+    public static String readAsString(S3Object object) throws IOException {
+        S3ObjectInputStream objectContent =
+                Objects.requireNonNull(object, "'object' cannot be null.").getObjectContent();
+        InputStreamReader inputStreamReader = new InputStreamReader(objectContent);
+        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+        String string = Utils.readAllAsString(bufferedReader);
+        bufferedReader.close();
+        inputStreamReader.close();
+        return string;
+    }
+
+    // endregion Read
+
 
     /**
      * Creates and returns an {@link AmazonS3} client for uploading files to the specified AWS Region to Amazon S3.
@@ -233,6 +260,7 @@ public final class S3Helpers {
         return new LocalizedS3ObjectId(Regions.US_EAST_1, "danshi", jarPath);
     }
 
+    @SuppressWarnings("unused")
     @NotNull
     @Contract("_ -> new")
     public static LocalizedS3ObjectId createImageId(String satelliteName) {

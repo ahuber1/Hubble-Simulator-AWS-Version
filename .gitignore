@@ -22,3 +22,5 @@ HelloWorldFunction/build/
 HelloWorldFunction/out/
 
 HelloWorldFunction/src/main/.aws-sam/
+
+HubbleAWSEMR/build/

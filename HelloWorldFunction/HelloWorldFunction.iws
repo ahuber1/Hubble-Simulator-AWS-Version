@@ -2,19 +2,28 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="defaeb9e-57a6-47ef-bd05-cc43fd09f6ba" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/HelloWorldFunction.main.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/HelloWorldFunction.test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/HubbleAWSLambda.HelloWorldFunction.main.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/HubbleAWSLambda.HelloWorldFunction.test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../HubbleAWSEMR/HubbleAWSEMR.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../HubbleAWSEMR/HubbleAWSEMR.main.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../HubbleAWSEMR/HubbleAWSEMR.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ahuber/hubble/Logger.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../HubbleAWSEMR/-1596029786/HelloWorldFunction.HubbleAWSEMR.HelloWorldFunction.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../HubbleAWSEMR/-1596029786/HelloWorldFunction.HubbleAWSEMR.HelloWorldFunction.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../HubbleAWSEMR/-1596029786/HubbleAWSEMR.HelloWorldFunction.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../HubbleAWSEMR/build/classes/java/main/ahuber/hubble/spark/SparkDriver.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../HubbleAWSEMR/build/classes/java/main/ahuber/hubble/spark/SparkMergeSort.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../HubbleAWSEMR/build/libs/HubbleAWSEMR-1.0.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../HubbleAWSEMR/build/tmp/jar/MANIFEST.MF" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HelloWorldFunction.iml" beforeDir="false" afterPath="$PROJECT_DIR$/HelloWorldFunction.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HelloWorldFunction.ipr" beforeDir="false" afterPath="$PROJECT_DIR$/HelloWorldFunction.ipr" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HelloWorldFunction.iws" beforeDir="false" afterPath="$PROJECT_DIR$/HelloWorldFunction.iws" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ahuber/hubble/SatelliteProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ahuber/hubble/SatelliteProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HubbleAWSLambda.HelloWorldFunction.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/HubbleAWSLambda.HelloWorldFunction.main.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HubbleAWSLambda.HelloWorldFunction.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/HubbleAWSLambda.HelloWorldFunction.test.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ahuber/hubble/Driver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ahuber/hubble/Driver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ahuber/hubble/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ahuber/hubble/Utils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ahuber/hubble/aws/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ahuber/hubble/aws/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/ahuber/hubble/sort/MergeSortTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/ahuber/hubble/sort/MergeSortTests.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ahuber/hubble/aws/S3Helpers.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ahuber/hubble/aws/S3Helpers.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ahuber/hubble/aws/SatelliteConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ahuber/hubble/aws/SatelliteConfiguration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../HubbleAWSEMR/HubbleAWSEMR.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../HubbleAWSEMR/HubbleAWSEMR.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../HubbleAWSEMR/HubbleAWSEMR.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../HubbleAWSEMR/HubbleAWSEMR.main.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../HubbleAWSEMR/HubbleAWSEMR.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../HubbleAWSEMR/HubbleAWSEMR.test.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../HubbleAWSEMR/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../HubbleAWSEMR/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../HubbleAWSEMR/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../HubbleAWSEMR/settings.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../HubbleAWSEMR/src/main/java/ahuber/hubble/spark/SparkDriver.java" beforeDir="false" afterPath="$PROJECT_DIR$/../HubbleAWSEMR/src/main/java/ahuber/hubble/spark/SparkDriver.java" afterDir="false" />
@@ -62,12 +71,13 @@
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="HubbleAWSEMR" type="f1a62948:ProjectNode" />
+                <item name="HelloWorldFunction" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="verification" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="HubbleAWSEMR" type="f1a62948:ProjectNode" />
-                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -80,23 +90,19 @@
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="build" type="c8890929:TasksNode$1" />
               </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="HubbleAWSEMR" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="other" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="HubbleAWSEMR" type="f1a62948:ProjectNode" />
-                <item name="Run Configurations" type="7b0102dc:RunConfigurationsNode" />
-              </path>
             </expand>
             <select />
           </tree_state>
         </projects_view>
       </state>
     </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -108,8 +114,19 @@
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="extract.method.default.visibility" value="private" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../HubbleAWSEMR/build.gradle" />
     <property name="settings.editor.selected.configurable" value="reference.settingsdialog.project.gradle" />
+  </component>
+  <component name="RunAnythingCache">
+    <option name="myCommands">
+      <command value="gradle HelloWorldFunction clean" />
+      <command value="gradle HubbleAWSEMR clean" />
+      <command value="gradle HubbleAWSEMR" />
+      <command value="gradle HubbleAWSEMR projects" />
+      <command value="gradle HelloWorldFunction build test" />
+      <command value="gradle HubbleAWSEMR build" />
+    </option>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -124,7 +141,7 @@
     </option>
   </component>
   <component name="RunManager" selected="Gradle.HubbleAWSEMR [build]">
-    <configuration name="HelloWorldFunction [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="HelloWorldFunction [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -135,7 +152,26 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="build" />
+            <option value="jar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="HelloWorldFunction [test]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="test" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -162,7 +198,7 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="HubbleAWSEMR [compileJava]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="HubbleAWSEMR [fatJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$/../HubbleAWSEMR" />
@@ -173,7 +209,7 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="compileJava" />
+            <option value="fatJar" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -181,53 +217,32 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="Tests in 'HelloWorldFunction.test'" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="HubbleAWSEMR [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/../HubbleAWSEMR" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="--tests *" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
-            <option value=":cleanTest" />
-            <option value=":test" />
+            <option value="jar" />
           </list>
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>false</GradleScriptDebugEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="Tests in 'ahuber.hubble'" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="--tests &quot;ahuber.hubble.*&quot;" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":cleanTest" />
-            <option value=":test" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>false</GradleScriptDebugEnabled>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.HelloWorldFunction [build]" />
         <item itemvalue="Gradle.HubbleAWSEMR [build]" />
-        <item itemvalue="Gradle.Tests in 'HelloWorldFunction.test'" />
-        <item itemvalue="Gradle.Tests in 'ahuber.hubble'" />
-        <item itemvalue="Gradle.HubbleAWSEMR [compileJava]" />
+        <item itemvalue="Gradle.HubbleAWSEMR [jar]" />
+        <item itemvalue="Gradle.HubbleAWSEMR [fatJar]" />
+        <item itemvalue="Gradle.HelloWorldFunction [jar]" />
+        <item itemvalue="Gradle.HelloWorldFunction [test]" />
       </list>
     </recent_temporary>
   </component>
@@ -246,7 +261,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>

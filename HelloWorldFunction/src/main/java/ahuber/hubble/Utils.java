@@ -1,8 +1,11 @@
 package ahuber.hubble;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import org.javatuples.Pair;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +13,8 @@ import java.io.Reader;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * A class containing general purpose helper methods.
@@ -143,6 +148,7 @@ public final class Utils {
      * @return The string containing all the characters in the {@link Reader}
      * @throws IOException If an I/O error occurs.
      */
+    @SuppressWarnings("unused")
     @Contract("null -> fail")
     @NotNull
     public static String readAllAsString(Reader reader) throws IOException {
@@ -155,5 +161,33 @@ public final class Utils {
         }
 
         return builder.toString();
+    }
+
+    /**
+     * Returns a {@link Logger} that can be used during the execution of the program.
+     * @param context The {@link Context} provided by AWS Lambda.
+     * @return The {@link Logger}
+     * @implNote  If there is a {@link Context} with a {@linkplain Context#getLogger()} logger}, then that
+     * {@link LambdaLogger} is used in the implementation of the returned {@link Logger}. Otherwise,
+     * {@link System#out} is used.
+     */
+    @NotNull
+    public static Logger getLogger(@Nullable Context context) {
+        LambdaLogger lambdaLogger;
+
+        if (context == null || (lambdaLogger = context.getLogger()) == null) {
+            return System.out::print;
+        }
+
+        return lambdaLogger::log;
+    }
+
+    @Contract("null -> !null")
+    public static Stream<Boolean> streamOf(boolean...values) {
+        if (values == null) {
+            return Stream.empty();
+        }
+
+        return IntStream.range(0, values.length).mapToObj(index -> values[index]);
     }
 }

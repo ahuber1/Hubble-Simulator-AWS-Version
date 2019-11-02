@@ -7,11 +7,12 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.jetbrains:annotations:17.0.0'
-    implementation 'com.amazonaws:aws-lambda-java-core:1.1.0'
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile 'org.jetbrains:annotations:17.0.0'
+    compile group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.0'
+    compile group: 'com.amazonaws', name: 'aws-lambda-java-events', version: '2.2.7'
     compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.627'
     compile group: 'com.amazonaws', name: 'aws-java-sdk-emr', version: '1.11.656'
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile group: 'org.javatuples', name: 'javatuples', version: '1.2'
     testImplementation 'junit:junit:4.12'
     testCompile group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.13.1'
@@ -20,4 +21,10 @@ dependencies {
 javadoc {
     title = "Satellite Simulator"
     options.setHeader("Satellite Simulator")
+}
+
+jar {
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
