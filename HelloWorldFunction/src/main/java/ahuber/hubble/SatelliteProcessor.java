@@ -204,7 +204,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
         } catch (JsonProcessingException e) {
             String message = String.format("Cannot serialize %s the following as JSON:\n%s",
                     SparkJobConfiguration.class.getName(), configuration);
-            throw new JsonGenerationException(message, e, null);
+            throw new JsonGenerationException(message, e);
         }
 
         // Upload JSON to Amazon S3

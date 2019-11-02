@@ -18,12 +18,9 @@ public class MergeSortTests {
 
     @Test
     public void testMergeSortInt() {
-        for (int i = 10; i < 10_000; i++) {
-            System.out.printf("i = %d\n", i);
-            int[] actual = ArrayUtils.revRange(0, i).toArray();
-            int[] expected = IntStream.range(0, i).toArray();
-            MergeSortInt.sort(actual, 10);
-            Assert.assertArrayEquals(expected, actual);
-        }
+        int[] actual = ArrayUtils.revRange(0, 100).toArray();
+        int[] expected = IntStream.range(0, 100).toArray();
+        MergeSortInt.sort(actual, 10);
+        Assert.assertArrayEquals(expected, actual);
     }
 }

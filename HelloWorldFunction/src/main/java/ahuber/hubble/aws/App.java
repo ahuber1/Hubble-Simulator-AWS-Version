@@ -25,16 +25,16 @@ import java.util.function.Consumer;
 public class App implements RequestStreamHandler {
     private Regions emrRegion = Regions.US_EAST_1;
     private final String satelliteName;
-    private final AmazonS3URI logUri;
-    private final AmazonS3URI sparkJobConfigUri;
-    private final AmazonS3URI sparkJobJarUri;
+    private final LocalizedS3ObjectId logFolderId;
+    private final LocalizedS3ObjectId sparkJobConfigId;
+    private final LocalizedS3ObjectId sparkJobJarId;
     private final String[] sparkJobJarArgs;
 
     public App() {
         satelliteName = generateName();
-        logUri = new AmazonS3URI(S3Helpers.createHadoopLogFolderId(satelliteName));
-        sparkJobConfigUri = new AmazonS3URI(S3Helpers.createSparkJobConfigId(satelliteName));
-        sparkJobJarUri = new AmazonS3URI(S3Helpers.createSparkJobJarId("TODO")); // TODO
+        logFolderId = S3Helpers.createHadoopLogFolderId(satelliteName);
+        sparkJobConfigId = S3Helpers.createSparkJobConfigId(satelliteName);
+        sparkJobJarId = S3Helpers.createSparkJobJarId("TODO"); // TODO
         sparkJobJarArgs = new String[] { "TODO" }; // TODO
     }
 
@@ -76,8 +76,8 @@ public class App implements RequestStreamHandler {
         // Create the buffer, satellite, processor, and receiver
         IntBuffer buffer = new IntBuffer(bufferSize);
         Satellite satellite = new Satellite(buffer);
-        SatelliteProcessor processor = new SatelliteProcessor(satelliteName, receiverThreshold, emrRegion, logUri,
-                sparkJobConfigUri, sparkJobJarUri, sparkJobJarArgs);
+        SatelliteProcessor processor = new SatelliteProcessor(satelliteName, receiverThreshold, emrRegion, logFolderId,
+                sparkJobConfigId, sparkJobJarId, sparkJobJarArgs);
         Receiver receiver = new Receiver(buffer, processor, receiverThreshold);
 
         // Create the threads

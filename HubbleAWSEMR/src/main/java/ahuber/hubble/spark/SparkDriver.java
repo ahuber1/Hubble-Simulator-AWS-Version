@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Objects;
 
-import static com.amazonaws.jmespath.ObjectMapperSingleton.getObjectMapper;
-
 public class SparkDriver {
     public static void main(String[] args) throws IOException {
         Objects.requireNonNull(args, "'args' cannot be null.");
