@@ -1,21 +1,17 @@
 package ahuber.hubble.spark;
 
 import ahuber.hubble.SatelliteImageWriter;
-import ahuber.hubble.Utils;
-import ahuber.hubble.aws.S3Helpers;
 import ahuber.hubble.aws.LocalizedS3ObjectId;
+import ahuber.hubble.aws.S3Helpers;
 import ahuber.hubble.aws.SparkJobConfiguration;
 import com.amazonaws.jmespath.ObjectMapperSingleton;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Objects;
 
 public class SparkDriver {
@@ -43,14 +39,9 @@ public class SparkDriver {
     @NotNull
     private static SparkJobConfiguration getSparkJobConfiguration(@NotNull AmazonS3URI uri, Regions region) throws IOException {
         S3Object download = S3Helpers.download(region, uri.getBucket(), uri.getKey());
-        S3ObjectInputStream objectContent = download.getObjectContent();
-        InputStreamReader inputStreamReader = new InputStreamReader(objectContent);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        String json = Utils.readAllAsString(bufferedReader);
+        String json = S3Helpers.readAsString(download);
         SparkJobConfiguration jobConfiguration = ObjectMapperSingleton.getObjectMapper()
                 .readValue(json, SparkJobConfiguration.class);
-        bufferedReader.close();
-        inputStreamReader.close();
         download.close();
         return jobConfiguration;
     }
