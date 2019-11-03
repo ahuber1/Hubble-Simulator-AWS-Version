@@ -63,7 +63,7 @@ public final class Utils {
      */
     public static long timeMillis(Runnable runnable) {
         return timeMillis(() -> {
-            Objects.requireNonNull(runnable, "The runnable cannot be null");
+            Objects.requireNonNull(runnable, "The runnable cannot be null").run();
             return Void.TYPE;
         }).getValue1();
     }
