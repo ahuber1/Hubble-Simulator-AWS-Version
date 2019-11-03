@@ -126,12 +126,11 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
         Application sparkApplication = new Application().withName("Spark");
 
         JobFlowInstancesConfig instancesConfig = new JobFlowInstancesConfig()
-//                .withEc2SubnetId("subnet-12ab3c45")
-//                .withEc2KeyName("myEc2Key")
                 .withInstanceCount(3)
                 .withKeepJobFlowAliveWhenNoSteps(true)
                 .withMasterInstanceType("m5.xlarge")
-                .withSlaveInstanceType("m5.xlarge");
+                .withSlaveInstanceType("m5.xlarge")
+                .withKeepJobFlowAliveWhenNoSteps(false);
 
         RunJobFlowRequest request = new RunJobFlowRequest()
                 .withName("Spark Cluster")
