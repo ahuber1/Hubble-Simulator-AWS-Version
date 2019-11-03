@@ -19,7 +19,7 @@ jar {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
     manifest {
-        attributes "Implementation-Title": "Foo",
+        attributes "Implementation-Title": "Satellite Spark Driver (Java)",
                 "Main-Class": "ahuber.hubble.spark.SparkDriver"
     }
 

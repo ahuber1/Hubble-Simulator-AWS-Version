@@ -37,6 +37,7 @@ public final class S3Helpers {
      * @return A {@link PutObjectResult} from the S3 SDK containing information about the upload that was just
      * performed.
      */
+    @SuppressWarnings("unused")
     public static PutObjectResult uploadImage(BufferedImage image, LocalizedS3ObjectId location)
             throws IOException, SdkClientException {
 
@@ -188,19 +189,76 @@ public final class S3Helpers {
 
     // region Download
 
+    /**
+     * Downloads an Amazon S3 object at the bucket and key specified in the provided {@link S3ObjectId}
+     * @param objectId An {@link S3ObjectId} containing the bucket and key for the file to download.
+     * @return The downloaded {@link S3Object}
+     * @throws NullPointerException {@code objectId} was null.
+     */
+    public static S3Object download(S3ObjectId objectId) {
+        return download(Objects.requireNonNull(objectId, "'objectId' cannot be null.").getBucket(), objectId.getKey());
+    }
+
+    /**
+     * Downloads an Amazon S3 object located at the provided bucket and key using the
+     * {@linkplain AmazonS3ClientBuilder#defaultClient() default client}.
+     * @param bucketName The name of the bucket that contains the file.
+     * @param key The key of the file to download.
+     * @return The downloaded {@link S3Object}
+     */
     public static S3Object download(String bucketName, String key) {
         AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
         return download(s3Client, bucketName, key);
     }
 
+    /**
+     * Downloads an Amazon S3 object contained within the AWS Region, bucket, and key in the provided {@link LocalizedS3ObjectId}
+     * @param localizedObjectId The {@link LocalizedS3ObjectId} containing the bucket and key for the S3 object to
+     *                          download.
+     * @return The downloaded {@link S3Object}
+     * @throws NullPointerException If {@code localizedObjectId} is null.
+     */
+    public static S3Object download(LocalizedS3ObjectId localizedObjectId) {
+        return download(Objects.requireNonNull(localizedObjectId, "'localizedObjectId' cannot be null.").getRegion(),
+                localizedObjectId.getBucket(), localizedObjectId.getKey());
+    }
+
+    /**
+     * Downloads an Amazon S3 object contained within the specified AWS Region, bucket, and key.
+     * @param region The region where the Amazon S3 object is located.
+     * @param bucketName The name of the Amazon S3 bucket where the Amazon S3 object is located.
+     * @param key The key of the Amazon S3 object that will be downloaded.
+     * @return The downloaded {@link S3Object}
+     */
     public static S3Object download(Regions region, String bucketName, String key) {
         AmazonS3 s3Client = getS3Client(region);
         return download(s3Client, bucketName, key);
     }
 
-    private static S3Object download(AmazonS3 s3Client, String bucketName, String key) {
+    /**
+     * Downloads an Amazon S3 object using the provided {@link AmazonS3} client that is located within the specified
+     * bucket and has the specified key.
+     * @param s3Client The {@link AmazonS3} client to use to download the S3 object.
+     * @param bucketName The name of the bucket where the S3 object is located.
+     * @param key The key of the Amazon S3 object that will be downloaded.
+     * @return The downloaded {@link S3Object}
+     */
+    public static S3Object download(AmazonS3 s3Client, String bucketName, String key) {
         GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
-        return Objects.requireNonNull(s3Client, "'s3Client' cannot be null.").getObject(getObjectRequest);
+        return download(s3Client, getObjectRequest);
+    }
+
+    /**
+     * Downloads an Amazon S3 object using the provided {@link AmazonS3} client via the provided
+     * {@link GetObjectRequest}
+     * @param s3Client The {@link AmazonS3} client to use.
+     * @param getObjectRequest The {@link GetObjectRequest} containing additional information regarding the
+     *                         Amazon S3 object that will be downloaded, particularly the bucket and key.
+     * @return The downloaded {@link S3Object}
+     */
+    public static S3Object download(AmazonS3 s3Client, GetObjectRequest getObjectRequest) {
+        return Objects.requireNonNull(s3Client, "'s3Client' cannot be null.").getObject(
+                Objects.requireNonNull(getObjectRequest, "'getObjectRequest' cannot be null."));
     }
 
     // endregion Download
@@ -245,13 +303,15 @@ public final class S3Helpers {
     @NotNull
     @Contract("_ -> new")
     public static LocalizedS3ObjectId createHadoopLogFolderId(String satelliteName) {
-        return new LocalizedS3ObjectId(Regions.US_EAST_1, "hadoop_logs", String.format("java/%s/", satelliteName));
+        return new LocalizedS3ObjectId(Regions.US_EAST_1, "ahuber-hadoop-logs", String.format("java/%s/",
+                satelliteName));
     }
 
     @NotNull
     @Contract("_ -> new")
     public static LocalizedS3ObjectId createSparkJobConfigId(String satelliteName) {
-        return new LocalizedS3ObjectId(Regions.US_EAST_1, "spark_job_configs", String.format("java/%s.json", satelliteName));
+        return new LocalizedS3ObjectId(Regions.US_EAST_1, "ahuber-spark-job-configs", String.format("java/%s.json",
+                satelliteName));
     }
 
     @NotNull
@@ -264,7 +324,8 @@ public final class S3Helpers {
     @NotNull
     @Contract("_ -> new")
     public static LocalizedS3ObjectId createImageId(String satelliteName) {
-        return new LocalizedS3ObjectId(Regions.US_EAST_1, "satellite_images", String.format("java/%s.jpg", satelliteName));
+        return new LocalizedS3ObjectId(Regions.US_EAST_1, "ahuber-satellite-images", String.format("java/%s.jpg",
+                satelliteName));
     }
 
     // endregion Urls

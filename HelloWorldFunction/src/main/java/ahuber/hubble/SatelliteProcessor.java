@@ -89,21 +89,15 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
     /**
      * Starts the Hadoop Cluster
      * @param emrRegion The region where the Hadoop Cluster is located.
-     * @param logUri The Amazon S3 URL for where logs will be stored.
-     * @param sparkJobJarUri The URL of the JAR on Amazon S3 containing the code that will be executed during the
-     *                       Spark Job.
-     * @param sparkJobJarArgs Additional arguments that will be passed to {@code sparkJobJarUri}
+     * @param logLocationId The location of the folder where logs for the Hadoop job be stored.
+     * @param sparkJobJarLocationId The location of the JAR on Amazon S3 containing the code that will be executed
+     *                           during the Spark Job.
+     * @param sparkJobJarArgs Additional arguments that will be passed to {@code sparkJobJarLocationId}
      * @return A {@link RunJobFlowResult} containing additional information pertaining to the request made to start
      * the Hadoop Cluster.
-     *
      */
-
-
-
-
-
-    private RunJobFlowResult startHadoopCluster(Regions emrRegion, LocalizedS3ObjectId logUri,
-            LocalizedS3ObjectId sparkJobJarUri, String... sparkJobJarArgs) {
+    private RunJobFlowResult startHadoopCluster(Regions emrRegion, LocalizedS3ObjectId logLocationId,
+            LocalizedS3ObjectId sparkJobJarLocationId, String... sparkJobJarArgs) {
 
         AWSCredentials credentials;
 
@@ -120,7 +114,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
                 .build();
 
         HadoopJarStepConfig hadoopJarStep = new HadoopJarStepConfig()
-                .withJar(sparkJobJarUri.getStringUri())
+                .withJar(sparkJobJarLocationId.getStringUri())
                 .withArgs(sparkJobJarArgs);
 
         StepConfig customJarStep = new StepConfig()
@@ -144,7 +138,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
                 .withReleaseLabel("emr-5.27.0")
                 .withSteps(steps)
                 .withApplications(sparkApplication)
-                .withLogUri(logUri.getStringUri())
+                .withLogUri(logLocationId.getStringUri())
                 .withServiceRole("EMR_DefaultRole")
                 .withJobFlowRole("EMR_EC2_DefaultRole")
                 .withInstances(instancesConfig);
