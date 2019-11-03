@@ -242,7 +242,7 @@ public class App implements RequestHandler<S3Event, String> {
         // Create the buffer, satellite, processor, and receiver
         IntBuffer buffer = new IntBuffer(bufferSize);
         Satellite satellite = new Satellite(buffer);
-        SatelliteProcessor processor = new SatelliteProcessor(satelliteName, receiverThreshold, emrRegion, logFolderId,
+        SatelliteProcessor processor = new SatelliteProcessor(satelliteName, t, emrRegion, logFolderId,
                 sparkJobConfigId, sparkJobJarId, sparkJobJarArgs);
         Receiver receiver = new Receiver(buffer, processor, receiverThreshold);
 

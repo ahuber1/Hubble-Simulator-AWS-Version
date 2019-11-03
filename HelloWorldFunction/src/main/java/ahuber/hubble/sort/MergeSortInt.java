@@ -1,6 +1,7 @@
 package ahuber.hubble.sort;
 
 import ahuber.hubble.adt.ArrayUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -9,6 +10,8 @@ import java.util.Objects;
  * A class containing methods for sorting {@code int} arrays.
  */
 public final class MergeSortInt {
+
+    private static int threadCount;
 
     /**
      * Sorts the provided array using a multi-threaded version of Merge Sort.
@@ -42,11 +45,15 @@ public final class MergeSortInt {
         int middle = startInclusive + length / 2;
 
         // Sort left half
-        Thread leftHalfThread = new Thread(() -> sort(array, startInclusive, middle, threshold));
+        SortRunnable leftRunnable = new SortRunnable(array, startInclusive, middle, threshold);
+        Thread leftHalfThread = new Thread(leftRunnable);
+        System.out.printf("Starting left thread. Thread count will become %d\n", ++threadCount);
         leftHalfThread.start();
 
         // Sort right half
-        Thread rightHalfThread = new Thread(() -> sort(array, middle + 1, endInclusive, threshold));
+        SortRunnable rightRunnable = new SortRunnable(array, middle + 1, endInclusive, threshold);
+        Thread rightHalfThread = new Thread(rightRunnable);
+        System.out.printf("Starting right thread. Thread count will become %d\n", ++threadCount);
         rightHalfThread.start();
 
         // Wait
@@ -139,6 +146,27 @@ public final class MergeSortInt {
                 array[i] = array[j];
                 array[j] = temp;
             }
+        }
+    }
+
+    private static class SortRunnable implements Runnable {
+        private final int[] array;
+        private final int start;
+        private final int end;
+        private final int threshold;
+
+        @Contract(pure = true)
+        private SortRunnable(int[] array, int start, int end, int threshold) {
+            this.array = array;
+            this.start = start;
+            this.end = end;
+            this.threshold = threshold;
+        }
+
+
+        @Override
+        public void run() {
+            sort(array, start, end, threshold);
         }
     }
 }

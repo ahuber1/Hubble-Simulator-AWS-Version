@@ -18,28 +18,43 @@ repositories {
 }
 
 dependencies {
-    compile group: 'org.apache.spark', name: 'spark-sql_2.12', version: '2.4.4'
+//    compile 'org.apache.spark:spark-mllib_2.11:2.1.0'
+    compile 'org.apache.spark:spark-sql_2.11:2.1.0'
+//    compile 'org.apache.spark:spark-streaming-flume-assembly_2.11:2.1.0'
+//    compile 'org.apache.spark:spark-graphx_2.11:2.1.0'
+//    compile 'org.apache.spark:spark-launcher_2.11:2.1.0'
+//    compile 'org.apache.spark:spark-catalyst_2.11:2.1.0'
+//    compile 'org.apache.spark:spark-streaming_2.11:2.1.0'
+//    compile 'org.apache.spark:spark-core_2.11:2.1.0'
     compile project(':HelloWorldFunction')
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-jar {
+//jar {
+//    from {
+//        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+//    }
+//    manifest {
+//        attributes "Implementation-Title": "Satellite Spark Driver (Java)",
+//                "Main-Class": "ahuber.hubble.spark.SparkDriver"
+//    }
+//
+//    zip64 true
+//    exclude "META-INF/*.SF"
+//    exclude "META-INF/*.DSA"
+//    exclude "META-INF/*.RSA"
+//}
+
+shadowJar {
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        project.configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
     manifest {
         attributes "Implementation-Title": "Satellite Spark Driver (Java)",
                 "Main-Class": "ahuber.hubble.spark.SparkDriver"
     }
-
-    zip64 true
-    exclude "META-INF/*.SF"
-    exclude "META-INF/*.DSA"
-    exclude "META-INF/*.RSA"
-}
-
-shadowJar {
     archiveClassifier.set(null)
+    zip64 true
     mergeServiceFiles('reference.conf')
 //    append('resource.conf')
 }
