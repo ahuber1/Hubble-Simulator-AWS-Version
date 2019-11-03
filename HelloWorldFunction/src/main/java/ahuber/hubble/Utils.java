@@ -157,7 +157,7 @@ public final class Utils {
         int charCode;
 
         while ((charCode = reader.read()) != -1) {
-            builder.append(charCode);
+            builder.append((char)charCode);
         }
 
         return builder.toString();

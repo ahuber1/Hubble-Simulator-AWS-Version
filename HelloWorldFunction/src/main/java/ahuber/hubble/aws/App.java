@@ -84,8 +84,8 @@ public class App implements RequestHandler<S3Event, String> {
         return output;
     }
 
-    public String process(SatelliteConfiguration configuration) {
-        return process(configuration, Utils.getLogger(null));
+    public String process(String bucket, String key) throws IOException {
+        return processS3Entity(bucket, key, Utils.getLogger(null));
     }
 
     @NotNull
@@ -214,9 +214,13 @@ public class App implements RequestHandler<S3Event, String> {
 
     private String processS3Entity(@NotNull String bucket, @NotNull String key, @NotNull Logger logger) throws IOException {
         // Download the content
+        logger.logLine("Downloading S3 object located in bucket \"%s\" and that has key \"%s\"...", bucket, key);
+
         S3Object object = S3Helpers.download(bucket, key);
         String content = S3Helpers.readAsString(object);
         object.close();
+
+        logger.logLine("JSON has been read: %s", content);
 
         // Convert JSON to Java object
         SatelliteConfiguration configuration = ObjectMapperSingleton.getObjectMapper()
@@ -225,7 +229,7 @@ public class App implements RequestHandler<S3Event, String> {
 
     }
 
-    private String process(SatelliteConfiguration configuration, @NotNull Logger logger) {
+    private String process(@NotNull SatelliteConfiguration configuration, @NotNull Logger logger) {
         // Calculate variables that determine how the satellite will behave
         int n = (int) Math.pow(2, configuration.i);
         int t = (int) Math.pow(10, configuration.j);
