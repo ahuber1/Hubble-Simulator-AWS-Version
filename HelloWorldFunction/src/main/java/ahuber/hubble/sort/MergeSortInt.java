@@ -1,17 +1,15 @@
 package ahuber.hubble.sort;
 
 import ahuber.hubble.adt.ArrayUtils;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.concurrent.*;
 
 /**
  * A class containing methods for sorting {@code int} arrays.
  */
 public final class MergeSortInt {
-
-    private static int threadCount;
 
     /**
      * Sorts the provided array using a multi-threaded version of Merge Sort.
@@ -31,10 +29,13 @@ public final class MergeSortInt {
             throw new IllegalArgumentException(message);
         }
 
-        sort(array, 0, array.length - 1, threshold);
+        ForkJoinPool pool = new ForkJoinPool(ForkJoinPool.getCommonPoolParallelism());
+        sort(pool, array, 0, array.length - 1, threshold);
     }
 
-    private static void sort(@NotNull int[] array, int startInclusive, int endInclusive, int threshold) {
+    private static void sort(@NotNull ForkJoinPool pool, @NotNull int[] array,
+            int startInclusive, int endInclusive, int threshold) {
+
         int length = ArrayUtils.calculateLength(startInclusive, endInclusive, array.length);
 
         if (length < threshold) {
@@ -43,39 +44,12 @@ public final class MergeSortInt {
         }
 
         int middle = startInclusive + length / 2;
-
-        // Sort left half
-        SortRunnable leftRunnable = new SortRunnable(array, startInclusive, middle, threshold);
-        Thread leftHalfThread = new Thread(leftRunnable);
-        System.out.printf("Starting left thread. Thread count will become %d\n", ++threadCount);
-        leftHalfThread.start();
-
-        // Sort right half
-        SortRunnable rightRunnable = new SortRunnable(array, middle + 1, endInclusive, threshold);
-        Thread rightHalfThread = new Thread(rightRunnable);
-        System.out.printf("Starting right thread. Thread count will become %d\n", ++threadCount);
-        rightHalfThread.start();
-
-        // Wait
-        while (true) {
-            try {
-                leftHalfThread.join();
-                break;
-            } catch (InterruptedException e) {
-                // Try again...
-            }
-        }
-
-        while (true) {
-            try {
-                rightHalfThread.join();
-                break;
-            } catch (InterruptedException e) {
-                // Try again...
-            }
-        }
-
-        // Merge
+        SortCallable leftCallable = new SortCallable(pool, array, startInclusive, middle, threshold);
+        SortCallable rightCallable = new SortCallable(pool, array, middle + 1, endInclusive, threshold);
+        ForkJoinTask<Void> leftTask = pool.submit(leftCallable);
+        ForkJoinTask<Void> rightTask = pool.submit(rightCallable);
+        leftTask.join();
+        rightTask.join();
         merge(array, startInclusive, middle, endInclusive);
     }
 
@@ -149,24 +123,26 @@ public final class MergeSortInt {
         }
     }
 
-    private static class SortRunnable implements Runnable {
+    private static class SortCallable implements Callable<Void> {
+
+        private final ForkJoinPool pool;
         private final int[] array;
-        private final int start;
-        private final int end;
+        private final int startInclusive;
+        private final int endInclusive;
         private final int threshold;
 
-        @Contract(pure = true)
-        private SortRunnable(int[] array, int start, int end, int threshold) {
+        private SortCallable(ForkJoinPool pool, int[] array, int startInclusive, int endInclusive, int threshold) {
+            this.pool = pool;
             this.array = array;
-            this.start = start;
-            this.end = end;
+            this.startInclusive = startInclusive;
+            this.endInclusive = endInclusive;
             this.threshold = threshold;
         }
 
-
         @Override
-        public void run() {
-            sort(array, start, end, threshold);
+        public Void call() {
+            sort(pool, array, startInclusive, endInclusive, threshold);
+            return null;
         }
     }
 }
