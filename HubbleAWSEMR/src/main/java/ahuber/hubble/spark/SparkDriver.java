@@ -23,12 +23,11 @@ public class SparkDriver {
         try {
             SparkSession session = SparkSession.builder()
                     .appName("Hubble_AWS_EMR")
-                    .master("local[2]")
-                    .config("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName())
                     .getOrCreate();
+
             JavaSparkContext context = new JavaSparkContext(session.sparkContext());
             SparkJobConfiguration jobConfiguration = extractSparkJobConfiguration(args);
-            int[] sortedData = parallelizedMergeSort(context, jobConfiguration);
+            int[] sortedData = parallelMergeSort(context, jobConfiguration);
             session.stop();
             BufferedImage image = SatelliteImageWriter.writeGreyscaleImage(sortedData);
             S3Helpers.uploadImage(image, Regions.US_EAST_1, "ahuber-satellite-images",
@@ -38,7 +37,7 @@ public class SparkDriver {
         }
     }
 
-    private static int[] parallelizedMergeSort(JavaSparkContext context, SparkJobConfiguration jobConfiguration) {
+    private static int[] parallelMergeSort(@NotNull JavaSparkContext context, @NotNull SparkJobConfiguration jobConfiguration) {
         int[] unsortedData = jobConfiguration.data;
         int threshold = jobConfiguration.threshold;
         int end = unsortedData.length;
