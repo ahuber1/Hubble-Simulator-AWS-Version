@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class App implements RequestHandler<S3Event, String> {
-    private Regions emrRegion = Regions.US_EAST_1;
+    private static final Regions EMR_REGION = Regions.US_EAST_1;
+    private static final String SPARK_JOB_CLASS = "ahuber.hubble.spark.SparkDriver";
     private final String satelliteName;
     private final LocalizedS3ObjectId logFolderId;
     private final LocalizedS3ObjectId sparkJobConfigId;
@@ -242,8 +243,8 @@ public class App implements RequestHandler<S3Event, String> {
         // Create the buffer, satellite, processor, and receiver
         IntBuffer buffer = new IntBuffer(bufferSize);
         Satellite satellite = new Satellite(buffer);
-        SatelliteProcessor processor = new SatelliteProcessor(satelliteName, t, emrRegion, logFolderId,
-                sparkJobConfigId, sparkJobJarId, sparkJobJarArgs);
+        SatelliteProcessor processor = new SatelliteProcessor(satelliteName, t, EMR_REGION, logFolderId,
+                sparkJobConfigId, sparkJobJarId, SPARK_JOB_CLASS, sparkJobJarArgs);
         Receiver receiver = new Receiver(buffer, processor, receiverThreshold);
 
         // Create the threads

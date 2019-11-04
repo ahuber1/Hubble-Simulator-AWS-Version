@@ -3,10 +3,15 @@ package ahuber.hubble.adt;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * A class containing various utilities for arrays.
@@ -156,34 +161,58 @@ public final class ArrayUtils {
     }
 
     @NotNull
-    public static <T> T[] combine(T[] array1, T[] array2, IntFunction<T[]> generator) {
-        return combine(new StandardArrayWrapper<>(Objects.requireNonNull(array1, "'array1' cannot be null.")),
-                new StandardArrayWrapper<>(Objects.requireNonNull(array2, "'array2' cannot be null.")),
-                length -> new StandardArrayWrapper<>(generator.apply(length))).getArray();
+    public static <T> T[] combine(IntFunction<T[]> generator, T[]...arrays) {
+        Objects.requireNonNull(generator, "'generator' cannot be null.");
+        Objects.requireNonNull(arrays, "'arrays' cannot be null.");
+
+        List<StandardArrayWrapper<T>> list = Arrays.stream(arrays)
+                .filter(Objects::nonNull)
+                .map(StandardArrayWrapper::new)
+                .collect(Collectors.toList());
+
+        StandardArrayWrapper<T> combinedWrapper = combine(list,
+                len -> new StandardArrayWrapper<T>(generator.apply(len)));
+
+        return combinedWrapper.getArray();
     }
+
 
     @NotNull
-    public static int[] combine(int[] array1, int[] array2) {
-        return combine(new IntArrayWrapper(Objects.requireNonNull(array1, "'array1' cannot be null.")),
-                new IntArrayWrapper(Objects.requireNonNull(array2, "'array2' cannot be null.")),
-                length -> new IntArrayWrapper(new int[length])).getArray();
+    public static int[] combine(int[]...arrays) {
+        Objects.requireNonNull(arrays, "'arrays' cannot be null.");
+
+        IntArrayWrapper[] wrappers = Arrays.stream(arrays)
+                .filter(Objects::nonNull)
+                .map(IntArrayWrapper::new)
+                .toArray(IntArrayWrapper[]::new);
+
+        IntArrayWrapper combinedWrapper = combine(IntArrayWrapper::new, wrappers);
+
+        return combinedWrapper.getArray();
     }
 
-    private static <W extends ArrayWrapper<T>, T> W combine(W wrapper1, W wrapper2, IntFunction<W> generator) {
-        Objects.requireNonNull(wrapper1, "'wrapper1' cannot be null.");
-        Objects.requireNonNull(wrapper2, "'wrapper2' cannot be null.");
-        Objects.requireNonNull(generator, "'generator' cannot be null.");
+    public static <W extends ArrayWrapper<T>, T> W combine(IntFunction<W> generator, W...wrappers) {
+        Objects.requireNonNull(wrappers, "'wrappers' cannot be null.");
+        return combine(Arrays.asList(wrappers), generator);
+    }
 
-        int length = wrapper1.length() + wrapper2.length();
+    private static <W extends ArrayWrapper<T>, T> W combine(Collection<W> wrappers, IntFunction<W> generator) {
+        int length = wrappers.stream().filter(Objects::nonNull).mapToInt(W::length).sum();
         W wrapper = generator.apply(length);
         Objects.requireNonNull(wrapper, "'generator' cannot return null.");
 
-        for (int i = 0; i < wrapper1.length(); i++) {
-            wrapper.set(i, wrapper1.get(i));
-        }
+        int offset = 0;
 
-        for (int i = 0; i < wrapper2.length(); i++) {
-            wrapper.set(i + wrapper1.length(), wrapper2.get(i));
+        for (W subWrapper : wrappers) {
+            if (subWrapper == null) {
+                continue;
+            }
+
+            for (int i = 0; i < subWrapper.length(); i++) {
+                wrapper.set(i + offset, subWrapper.get(i));
+            }
+
+            offset += subWrapper.length();
         }
 
         return wrapper;

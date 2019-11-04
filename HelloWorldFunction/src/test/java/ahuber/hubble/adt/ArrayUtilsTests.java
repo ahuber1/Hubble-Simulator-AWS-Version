@@ -92,7 +92,7 @@ public class ArrayUtilsTests {
         String[] array1 = IntStream.range(0, 10).mapToObj(Integer::toString).toArray(String[]::new);
         String[] array2 = IntStream.range(10, 20).mapToObj(Integer::toString).toArray(String[]::new);
         String[] expected = IntStream.range(0, 20).mapToObj(Integer::toString).toArray(String[]::new);
-        String[] actual = ArrayUtils.combine(array1, array2, String[]::new);
+        String[] actual = ArrayUtils.combine(String[]::new, array1, array2);
         Assert.assertArrayEquals(expected, actual);
     }
 

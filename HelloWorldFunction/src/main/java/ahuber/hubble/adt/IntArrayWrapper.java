@@ -13,6 +13,16 @@ public class IntArrayWrapper implements ArrayWrapper<Integer> {
     @NotNull private final int[] array;
 
     /**
+     * Creates a new {@link IntArrayWrapper} that wraps an underlying {@code int} array filled with zeroes and that
+     * has the specified length.
+     * @param length THe length of the {@code int} array
+     */
+    @Contract(pure = true)
+    public IntArrayWrapper(int length) {
+        this(new int[length]);
+    }
+
+    /**
      * Creates a new {@link IntArrayWrapper} that wraps the underlying {@code int} array.
      * @param array The {@code int} array.
      */

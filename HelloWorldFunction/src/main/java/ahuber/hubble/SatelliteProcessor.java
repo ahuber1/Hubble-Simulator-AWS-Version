@@ -1,5 +1,6 @@
 package ahuber.hubble;
 
+import ahuber.hubble.adt.ArrayUtils;
 import ahuber.hubble.adt.IntArrayWrapper;
 import ahuber.hubble.aws.S3Helpers;
 import ahuber.hubble.aws.LocalizedS3ObjectId;
@@ -37,9 +38,10 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
     @NotNull private final LocalizedS3ObjectId logFolderLocation;
     @NotNull private final LocalizedS3ObjectId sparkJobJarLocation;
     @NotNull private final String[] sparkJobJarArgs;
+    private final String sparkJobClass;
 
     public SatelliteProcessor(String satelliteName, int threshold, Regions emrRegion, LocalizedS3ObjectId logFolderLocation,
-            LocalizedS3ObjectId sparkJobConfigLocation, LocalizedS3ObjectId sparkJobJarLocation, String...sparkJobJarArgs) {
+            LocalizedS3ObjectId sparkJobConfigLocation, LocalizedS3ObjectId sparkJobJarLocation, String sparkJobClass, String... sparkJobJarArgs) {
 
         this.satelliteName = Objects.requireNonNull(satelliteName, "'satelliteName' cannot be null.");
         this.threshold = threshold;
@@ -47,6 +49,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
         this.emrRegion = Objects.requireNonNull(emrRegion, "'emrRegion' cannot be null.");
         this.logFolderLocation = Objects.requireNonNull(logFolderLocation, "'logUri' cannot be null.");
         this.sparkJobJarLocation = Objects.requireNonNull(sparkJobJarLocation, "'sparkJobJarUri' cannot be null.");
+        this.sparkJobClass = Objects.requireNonNull(sparkJobClass, "'sparkJobClass' cannot be null.");
         this.sparkJobJarArgs = Objects.requireNonNull(sparkJobJarArgs, "'sparkJobJarArgs' cannot be null.");
 
         semaphore.acquireUninterruptibly();
@@ -79,7 +82,8 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
 
         System.out.printf("%s was successfully converted to JSON and uploaded to Amazon S3.\n", configuration);
 
-        RunJobFlowResult runJobFlowResult = startHadoopCluster(emrRegion, logFolderLocation, sparkJobJarLocation, sparkJobJarArgs);
+        RunJobFlowResult runJobFlowResult = startHadoopCluster(emrRegion, logFolderLocation, sparkJobJarLocation,
+                sparkJobClass, sparkJobJarArgs);
         System.out.printf("An Amazon ECR job request was submitted and was approved. Job Flow Id is %s.\n",
                 runJobFlowResult.getJobFlowId());
 
@@ -92,12 +96,13 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
      * @param logLocationId The location of the folder where logs for the Hadoop job be stored.
      * @param sparkJobJarLocationId The location of the JAR on Amazon S3 containing the code that will be executed
      *                           during the Spark Job.
+     * @param sparkJobClass The fully-qualified class name containing the entry point of the Spark job.
      * @param sparkJobJarArgs Additional arguments that will be passed to {@code sparkJobJarLocationId}
      * @return A {@link RunJobFlowResult} containing additional information pertaining to the request made to start
      * the Hadoop Cluster.
      */
     private RunJobFlowResult startHadoopCluster(Regions emrRegion, LocalizedS3ObjectId logLocationId,
-            LocalizedS3ObjectId sparkJobJarLocationId, String... sparkJobJarArgs) {
+            LocalizedS3ObjectId sparkJobJarLocationId, String sparkJobClass, String... sparkJobJarArgs) {
 
         AWSCredentials credentials;
 
@@ -113,8 +118,14 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
                 .withRegion(emrRegion)
                 .build();
 
+        String[] commandRunnerArgs = Utils.arrayOf("spark-submit", "--deploy-mode", "cluster",
+                "--executor-memory", "1g", "--class", sparkJobClass,
+                sparkJobJarLocationId.getStringUri());
+        String[] allArgs = ArrayUtils.combine(String[]::new, commandRunnerArgs, sparkJobJarArgs);
+
         HadoopJarStepConfig hadoopJarStep = new HadoopJarStepConfig()
-                .withJar(sparkJobJarLocationId.getStringUri())
+                .withJar("command-runner.jar")
+                .withArgs(allArgs)
                 .withArgs(sparkJobJarArgs);
 
         StepConfig customJarStep = new StepConfig()
