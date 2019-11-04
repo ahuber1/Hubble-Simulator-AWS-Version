@@ -1,6 +1,6 @@
 package ahuber.hubble.adt;
 
-import ahuber.hubble.Utils;
+import ahuber.hubble.utils.Utils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

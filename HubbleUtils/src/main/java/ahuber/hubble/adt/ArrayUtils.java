@@ -3,7 +3,6 @@ package ahuber.hubble.adt;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.Objects;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * A class containing various utilities for arrays.
@@ -160,6 +158,7 @@ public final class ArrayUtils {
                 .map(i -> endInclusive - i + startInclusive);
     }
 
+    @SafeVarargs
     @NotNull
     public static <T> T[] combine(IntFunction<T[]> generator, T[]...arrays) {
         Objects.requireNonNull(generator, "'generator' cannot be null.");
@@ -171,7 +170,7 @@ public final class ArrayUtils {
                 .collect(Collectors.toList());
 
         StandardArrayWrapper<T> combinedWrapper = combine(list,
-                len -> new StandardArrayWrapper<T>(generator.apply(len)));
+                len -> new StandardArrayWrapper<>(generator.apply(len)));
 
         return combinedWrapper.getArray();
     }
@@ -191,6 +190,8 @@ public final class ArrayUtils {
         return combinedWrapper.getArray();
     }
 
+    @SuppressWarnings("WeakerAccess")
+    @SafeVarargs
     public static <W extends ArrayWrapper<T>, T> W combine(IntFunction<W> generator, W...wrappers) {
         Objects.requireNonNull(wrappers, "'wrappers' cannot be null.");
         return combine(Arrays.asList(wrappers), generator);

@@ -1,6 +1,6 @@
 package ahuber.hubble.aws;
 
-import ahuber.hubble.Utils;
+import ahuber.hubble.utils.Utils;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;

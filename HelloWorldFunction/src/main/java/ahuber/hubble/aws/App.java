@@ -2,6 +2,9 @@ package ahuber.hubble.aws;
 
 import ahuber.hubble.*;
 import ahuber.hubble.adt.IntBuffer;
+import ahuber.hubble.utils.Logger;
+import ahuber.hubble.utils.Utils;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.jmespath.ObjectMapperSingleton;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.lambda.runtime.Context;

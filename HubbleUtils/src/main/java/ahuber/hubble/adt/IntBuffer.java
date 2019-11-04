@@ -1,9 +1,8 @@
 package ahuber.hubble.adt;
 
-import ahuber.hubble.Utils;
+import ahuber.hubble.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /**

@@ -1,6 +1,4 @@
-package ahuber.hubble;
-
-import org.intellij.lang.annotations.PrintFormat;
+package ahuber.hubble.utils;
 
 public interface Logger {
     void log(String str);

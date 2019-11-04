@@ -1,3 +1,3 @@
-rootProject.name = 'HubbleAWSEMR'
+rootProject.name = 'HelloWorldFunction'
 include ':HubbleUtils'
 project(':HubbleUtils').projectDir = new File(settingsDir, '../HubbleUtils')

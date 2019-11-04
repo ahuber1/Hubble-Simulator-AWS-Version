@@ -1,9 +1,9 @@
 package ahuber.hubble.spark;
 
-import ahuber.hubble.SatelliteImageWriter;
 import ahuber.hubble.aws.S3Helpers;
 import ahuber.hubble.aws.SparkJobConfiguration;
 import ahuber.hubble.sort.MergeSortInt;
+import ahuber.hubble.utils.SatelliteImageWriter;
 import com.amazonaws.jmespath.ObjectMapperSingleton;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3URI;
@@ -29,7 +29,7 @@ public class SparkDriver {
             SparkJobConfiguration jobConfiguration = extractSparkJobConfiguration(args);
             int[] sortedData = parallelMergeSort(context, jobConfiguration);
             session.stop();
-            BufferedImage image = SatelliteImageWriter.writeGreyscaleImage(sortedData);
+            BufferedImage image =  SatelliteImageWriter.writeGreyscaleImage(sortedData);
             S3Helpers.uploadImage(image, Regions.US_EAST_1, "ahuber-satellite-images",
                     String.format("java/%s.jpg", jobConfiguration.satelliteName));
         } catch (IOException e) {
