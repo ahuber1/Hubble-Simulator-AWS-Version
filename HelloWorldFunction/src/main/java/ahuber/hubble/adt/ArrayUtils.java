@@ -3,7 +3,9 @@ package ahuber.hubble.adt;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
 /**
@@ -152,4 +154,39 @@ public final class ArrayUtils {
         return IntStream.rangeClosed(startInclusive, endInclusive)
                 .map(i -> endInclusive - i + startInclusive);
     }
+
+    @NotNull
+    public static <T> T[] combine(T[] array1, T[] array2, IntFunction<T[]> generator) {
+        return combine(new StandardArrayWrapper<>(Objects.requireNonNull(array1, "'array1' cannot be null.")),
+                new StandardArrayWrapper<>(Objects.requireNonNull(array2, "'array2' cannot be null.")),
+                length -> new StandardArrayWrapper<>(generator.apply(length))).getArray();
+    }
+
+    @NotNull
+    public static int[] combine(int[] array1, int[] array2) {
+        return combine(new IntArrayWrapper(Objects.requireNonNull(array1, "'array1' cannot be null.")),
+                new IntArrayWrapper(Objects.requireNonNull(array2, "'array2' cannot be null.")),
+                length -> new IntArrayWrapper(new int[length])).getArray();
+    }
+
+    private static <W extends ArrayWrapper<T>, T> W combine(W wrapper1, W wrapper2, IntFunction<W> generator) {
+        Objects.requireNonNull(wrapper1, "'wrapper1' cannot be null.");
+        Objects.requireNonNull(wrapper2, "'wrapper2' cannot be null.");
+        Objects.requireNonNull(generator, "'generator' cannot be null.");
+
+        int length = wrapper1.length() + wrapper2.length();
+        W wrapper = generator.apply(length);
+        Objects.requireNonNull(wrapper, "'generator' cannot return null.");
+
+        for (int i = 0; i < wrapper1.length(); i++) {
+            wrapper.set(i, wrapper1.get(i));
+        }
+
+        for (int i = 0; i < wrapper2.length(); i++) {
+            wrapper.set(i + wrapper1.length(), wrapper2.get(i));
+        }
+
+        return wrapper;
+    }
+    
 }

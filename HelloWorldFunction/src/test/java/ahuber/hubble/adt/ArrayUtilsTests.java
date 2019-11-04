@@ -78,6 +78,24 @@ public class ArrayUtilsTests {
         Assert.assertArrayEquals(expectedRevRangeClosedArray, actualRevRangeClosedArray);
     }
 
+    @Test
+    public void testCombine() {
+        int[] array1 = IntStream.range(0, 10).toArray();
+        int[] array2 = IntStream.range(10, 20).toArray();
+        int[] expected = IntStream.range(0, 20).toArray();
+        int[] actual = ArrayUtils.combine(array1, array2);
+        Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void testCombine2() {
+        String[] array1 = IntStream.range(0, 10).mapToObj(Integer::toString).toArray(String[]::new);
+        String[] array2 = IntStream.range(10, 20).mapToObj(Integer::toString).toArray(String[]::new);
+        String[] expected = IntStream.range(0, 20).mapToObj(Integer::toString).toArray(String[]::new);
+        String[] actual = ArrayUtils.combine(array1, array2, String[]::new);
+        Assert.assertArrayEquals(expected, actual);
+    }
+
     private int randomNegativeInt() {
         return -Math.abs(random.nextInt());
     }
