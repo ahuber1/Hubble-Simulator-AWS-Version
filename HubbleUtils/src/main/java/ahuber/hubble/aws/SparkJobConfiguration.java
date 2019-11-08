@@ -17,7 +17,7 @@ public class SparkJobConfiguration {
     }
 
     @Contract(pure = true)
-    public SparkJobConfiguration(@NotNull  String name, int threshold, int...data) {
+    public SparkJobConfiguration(@NotNull String name, int threshold, int...data) {
         this.satelliteName = Objects.requireNonNull(name, "The name cannot be null.");
         this.threshold = threshold;
         this.data = data;
