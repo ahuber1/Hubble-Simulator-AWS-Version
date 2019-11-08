@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -24,26 +25,27 @@ public final class ArrayUtils {
      * @throws ArrayIndexOutOfBoundsException If there is an illegal combination of indices and array length.
      */
     public static int calculateLength(int startIndex, int endIndex, int arrayLength) {
-        Lazy<String> messageLazy = new Lazy<>(() -> String.format("Arguments: [startIndex = %d, endIndex = %d, " +
-                "arrayLength = %d]", startIndex, endIndex, arrayLength));
+
+        Supplier<String> argumentDescriptionSupplier = () -> String.format("Arguments: [startIndex = %d, " +
+                "endIndex = %d, arrayLength = %d]", startIndex,  endIndex, arrayLength);
 
         if (startIndex < 0) {
-            String message = String.format("startIndex < 0 (%s)", messageLazy.getValue());
+            String message = String.format("startIndex < 0 (%s)", argumentDescriptionSupplier.get());
             throw new ArrayIndexOutOfBoundsException(message);
         }
 
         if (endIndex < 0) {
-            String message = String.format("endIndex < 0 (%s)", messageLazy.getValue());
+            String message = String.format("endIndex < 0 (%s)", argumentDescriptionSupplier.get());
             throw new ArrayIndexOutOfBoundsException(message);
         }
 
         if (arrayLength < 0) {
-            String message = String.format("arrayLength < 0 (%s)", messageLazy.getValue());
+            String message = String.format("arrayLength < 0 (%s)", argumentDescriptionSupplier.get());
             throw new ArrayIndexOutOfBoundsException(message);
         }
 
         if (endIndex < startIndex) {
-            String message = String.format("endIndex < startIndex (%s)", messageLazy.getValue());
+            String message = String.format("endIndex < startIndex (%s)", argumentDescriptionSupplier.get());
             throw new ArrayIndexOutOfBoundsException(message);
         }
 
@@ -53,12 +55,13 @@ public final class ArrayUtils {
 
         if (startIndex >= arrayLength) {
             String message = String.format("startIndex >= arrayLength && arrayLength > 0 (%s)",
-                    messageLazy.getValue());
+                    argumentDescriptionSupplier.get());
             throw new ArrayIndexOutOfBoundsException(message);
         }
 
         if (endIndex >= arrayLength) {
-            String message = String.format("endIndex >= arrayLength && arrayLength > 0 (%s)", messageLazy.getValue());
+            String message = String.format("endIndex >= arrayLength && arrayLength > 0 (%s)",
+                    argumentDescriptionSupplier.get());
             throw new ArrayIndexOutOfBoundsException(message);
         }
 
