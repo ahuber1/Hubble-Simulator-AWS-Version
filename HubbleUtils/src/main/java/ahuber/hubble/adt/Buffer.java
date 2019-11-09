@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * A temporary region of memory in which data is stored while it is being processed or transferred.
  * @param <T> The type of data stored in this buffer.
  */
-public class Buffer<T> extends BufferBase<T, Buffer<T>>
+public class Buffer<T> extends AbstractBuffer<T, Buffer<T>>
 {
     /**
      * Creates a new buffer using the specified array underneath. The length of the array is also the

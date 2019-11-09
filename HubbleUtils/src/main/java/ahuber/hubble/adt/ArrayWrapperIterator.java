@@ -1,5 +1,6 @@
 package ahuber.hubble.adt;
 
+import ahuber.hubble.utils.WarningSuppressionReason;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -8,17 +9,24 @@ import java.util.NoSuchElementException;
 
 /**
  * An {@link Iterator} for an {@link ArrayWrapper}
+ *
  * @param <T> The type of data stored in the {@link ArrayWrapper}
  */
 public class ArrayWrapperIterator<T> implements Iterator<T> {
-    @NotNull private final ArrayWrapper<T> wrapper;
+    @NotNull
+    private final ArrayWrapper<T> wrapper;
     private int index;
 
     /**
      * Creates a new {@link ArrayWrapperIterator} that iterates over the provided {@link ArrayWrapper}
+     *
      * @param wrapper The {@link ArrayWrapper} to iterate through.
      */
     @Contract(pure = true)
+    @SuppressWarnings("WeakerAccess")
+    // In case an ArrayWrapper<T> is extended and they want a quick and easy iterator in their implementation
+    @WarningSuppressionReason("In case an ArrayWrapper<T> is extended and they want a quick and easy iterator in " +
+            "their implementation.")
     public ArrayWrapperIterator(@NotNull ArrayWrapper<T> wrapper) {
         this.wrapper = wrapper;
     }

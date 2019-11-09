@@ -8,7 +8,7 @@ import java.util.Objects;
 /**
  * A temporary region of memory in which {@code int} data is stored while it is being processed or transferred
  */
-public class IntBuffer extends BufferBase<Integer, IntBuffer> {
+public class IntBuffer extends AbstractBuffer<Integer, IntBuffer> {
 
     /**
      * Creates a new buffer with the specified capacity.
