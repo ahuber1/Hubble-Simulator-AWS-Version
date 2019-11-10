@@ -41,21 +41,21 @@ The purpose of this project is to introduce the basic concepts of multi-threads,
 
 Three concurrent threads will be in charge of _collecting_, _storing_, and _receiving_ the data before the data is sent to an EMR cluster for _processing_.
 
-1. **Data collection:** the satellite thread will be generating and adding elements into a shared, thread-safe buffer $B_1$. In this particular project, the satellite thread will produce random integers between 0 — 4096 every _randint(10, 200)_ milliseconds. If there is no space on the shared buffer $B_1$, the satellite thread should wait.
+1. **Data collection:** the satellite thread will be generating and adding elements into a shared, thread-safe buffer *B<sub>1</sub>*. In this particular project, the satellite thread will produce random integers between 0 — 4096 every _randint(10, 200)_ milliseconds. If there is no space on the shared buffer *B<sub>1</sub>*, the satellite thread should wait.
 
-2. **Shared Buffer:** the buffer thread creates and manages a thread-safe array $B_1$ of size $N^2 \times 2$, where $N$ is a variable provided to each class. For this particular project, $N = 2^i$ for $8 \leq i \leq 11$, thus there will be only four possible values for $N \in \{2^8 = 256, 2^9 = 512, 2^{10} = 1024, 2^{11} = 2048\}$.
+2. **Shared Buffer:** the buffer thread creates and manages a thread-safe array *B<sub>1</sub>* of size  *N*<sup>2</sup> &times; 2, where *N* is a variable provided to each class. For this particular project, *N* = 2<sup><em>i</em></sup> for 8 &leq; i &leq; 11, thus there will be only four possible values for *N* &isin; {2<sup>8</sup> = 256, 2<sup>9</sup> = 512, 2<sup>10</sup> = 1024, 2<sup>11</sup> = 2048}
 
-3. **Receiver:** the receiver thread will try to obtain data from the satellite through the shared buffer $B_1$. However, the thread will have to wait until there are at least $N^2$ elements in the shared buffer. The buffer $B_1$ will notify the receiver when enough data becomes available and the receiver thread will then move the data into a different shared buffer $B_2$ of size $N^2$. Once the data is transferred, the information should be removed from the satellite's buffer $B_1$.
+3. **Receiver:** the receiver thread will try to obtain data from the satellite through the shared buffer *B<sub>1</sub>*. However, the thread will have to wait until there are at least *N*<sup>2</sup> elements in the shared buffer. The buffer *B<sub>1</sub>* will notify the receiver when enough data becomes available and the receiver thread will then move the data into a different shared buffer *B<sub>2</sub>* of size *N*<sup>2</sup>. Once the data is transferred, the information should be removed from the satellite's buffer *B<sub>1</sub>*.
 
 4. **Processing:** once the data has been processed, an EMR cluster comprising of one master node and two slave nodes should be launched _in your Java code_ that processes the data using Apache Spark. After completing the following steps or if any of the following steps fail, you _MUST_ shut down your EMR cluster.
 
     1. **Split the data into two halves.** Each half will go to one slave node.
    
-    2. **Sort the elements.** Each slave node will sort its half using a _Fork/Join_ implementation of _Mergesort_. The Mergesort algorithm will receive a parameter $T$ that defines the threshold for sorting the data. Each slave node will receive the same value for $T$. If the number of elements in a particular process are less than $T$, _insertion sort_ should be used to sort the elements. Otherwise, the data will be split and a _ForkingAction_ will be called. <br><br> The _Mergesort_ implementation does not have to be a generic class. Instead, it can be a similar implementation to the one discussed in class (see slides on Blackboard). The time $t_\text{sec}$ it takes to sort the elements should be computed. For this particular project, $T = 10^j$ where $j \in \{1, 2, 3, 4, 5\}$.
+    2. **Sort the elements.** Each slave node will sort its half using a _Fork/Join_ implementation of _Mergesort_. The Mergesort algorithm will receive a parameter *T* that defines the threshold for sorting the data. Each slave node will receive the same value for *T*. If the number of elements in a particular process are less than *T*, _insertion sort_ should be used to sort the elements. Otherwise, the data will be split and a _ForkingAction_ will be called. <br><br> The _Mergesort_ implementation does not have to be a generic class. Instead, it can be a similar implementation to the one discussed in class (see slides on Blackboard). The time *t*<sub>sec</sub> it takes to sort the elements should be computed. For this particular project, *T* = 10<sup><em>j</em></sup> where *j* &isin; {1, 2, 3, 4, 5}.
    
-    3. **Merge the two halves.** Once the slave nodes sort each half of $B_2$, merge them together into on sorted buffer $B_3$.
+    3. **Merge the two halves.** Once the slave nodes sort each half of *B<sub>2</sub>*, merge them together into on sorted buffer *B<sub>3</sub>*.
     
-    4. **Normalize the data.** Normalize the elements in $B_3$ between -128 and 127 and transfer the elements into a byte array.
+    4. **Normalize the data.** Normalize the elements in *B<sub>3</sub>* between -128 and 127 and transfer the elements into a byte array.
    
     5. **Save the information into an image.** Once the byte array has been created, the data should be saved as a grayscale image. See documentation on `BufferedImage`, `ImageIO`, and `ByteArrayInputStream`.
 
@@ -107,7 +107,7 @@ For example, the following JSON would be considered valid:
 }
 ```
 
-The _collecting_, _storing_, and _receiving_ steps should then run based on these values, which will, in turn, give you the value of $N$ and $T$ for the Hubble simulation.
+The _collecting_, _storing_, and _receiving_ steps should then run based on these values, which will, in turn, give you the value of *N* and *T* for the Hubble simulation.
 
 #### Sending Data for Processing
 
@@ -125,7 +125,6 @@ Once the data has been received, an EMR cluster then needs to launch with a URI 
       "type": "string"
     },
     "threshold": {
-      "$id": "#/properties/threshold",
       "type": "integer"
     },
     "data": {
