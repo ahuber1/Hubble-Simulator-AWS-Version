@@ -19,3 +19,5 @@ gradle-app.setting
 *.iml
 *.ipr
 *.iws
+
+.ipynb_checkpoints/
