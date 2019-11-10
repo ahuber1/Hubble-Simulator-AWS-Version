@@ -11,6 +11,8 @@ repositories {
 
 dependencies {
     compile project(':HubbleUtils')
+    compileOnly 'org.projectlombok:lombok:1.18.10'
+    annotationProcessor 'org.projectlombok:lombok:1.18.10'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.7.1'
     compile group: 'com.amazonaws', name: 'aws-lambda-java-events', version: '2.2.7'
     compile group: 'com.amazonaws', name: 'aws-java-sdk-emr', version: '1.11.656'

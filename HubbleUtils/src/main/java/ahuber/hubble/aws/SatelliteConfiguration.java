@@ -1,35 +1,35 @@
 package ahuber.hubble.aws;
 
+import ahuber.hubble.utils.WarningSuppressionReason;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Value;
 import org.jetbrains.annotations.Contract;
 
 /**
- * A Java object corresponding to the JSON that is provided as input to the AWS Lambda function in {@link App}
+ * A Java object corresponding to the JSON that is provided as input to the AWS Lambda function.
  */
+@Value
+@SuppressWarnings("unused")
+@WarningSuppressionReason("Used in external project.")
 public class SatelliteConfiguration {
     /**
-     * The <i>i</i> value
+     * Gets the <i>i</i> value
      */
-    public int i;
+    private final int i;
 
     /**
-     * The <i>j</i> value.
+     * Gets the <i>j</i> value.
      */
-    @SuppressWarnings("WeakerAccess")
-    public int j;
+    private final int j;
 
+    /**
+     * Creates a new {@link SatelliteConfiguration}
+     * @param i The <i>i</i> value.
+     * @param j The <i>j</i> value.
+     */
     @Contract(pure = true)
-    public SatelliteConfiguration() {
-        // Do nothing additional...
-    }
-
-    @Contract(pure = true)
-    public SatelliteConfiguration(int i, int j) {
+    public SatelliteConfiguration(@JsonProperty("i") int i, @JsonProperty("j") int j) {
         this.i = i;
         this.j = j;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("i = {%d}, j = {%d}", i, j);
     }
 }

@@ -1,6 +1,8 @@
 package ahuber.hubble.aws;
 
+import ahuber.hubble.utils.PublicApi;
 import ahuber.hubble.utils.Utils;
+import ahuber.hubble.utils.WarningSuppressionReason;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -9,6 +11,7 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.StringInputStream;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -21,21 +24,23 @@ public final class S3Helpers {
 
     /**
      * Uploads the provided {@link BufferedImage} to Amazon S3.
-     * @param image The {@link BufferedImage} to upload.
+     *
+     * @param image    The {@link BufferedImage} to upload.
      * @param location The location in Amazon S3 where the image will be uploaded to.
-     * @throws NullPointerException If {@code location} is {@code null}
-     * @throws IOException If an I/O error occurred.
-     * @throws SdkClientException If any of the following occurred:
-     * <ul>
-     *     <li>
-     *         The call was transmitted successfully, but Amazon S3 couldn't process it, so it returned an error
-     *         response,
-     *     </li>
-     *     <li>Amazon S3 couldn't be contacted for a response, or</li>
-     *     <li>The client couldn't parse the response from S3.</li>
-     * </ul>
      * @return A {@link PutObjectResult} from the S3 SDK containing information about the upload that was just
      * performed.
+     * @throws NullPointerException If {@code location} is {@code null}
+     * @throws IOException          If an I/O error occurred.
+     * @throws SdkClientException   If any of the following occurred:
+     *                              <ul>
+     *                                  <li>
+     *                                      The call was transmitted successfully, but Amazon S3 couldn't process it,
+     *                                      so it returned an error
+     *                                      response,
+     *                                  </li>
+     *                                  <li>Amazon S3 couldn't be contacted for a response, or</li>
+     *                                  <li>The client couldn't parse the response from S3.</li>
+     *                              </ul>
      */
     @SuppressWarnings("unused")
     public static PutObjectResult uploadImage(BufferedImage image, LocalizedS3ObjectId location)
@@ -48,22 +53,24 @@ public final class S3Helpers {
 
     /**
      * Uploads the provided {@link BufferedImage} to Amazon S3.
-     * @param image The {@link BufferedImage} to upload.
-     * @param region The region to upload the {@link BufferedImage} to.
+     *
+     * @param image      The {@link BufferedImage} to upload.
+     * @param region     The region to upload the {@link BufferedImage} to.
      * @param bucketName The name of the S3 bucket to upload the image to.
-     * @param s3Key A key used to uniquely identify the content in S3.
-     * @throws IOException If an I/O error occurred.
-     * @throws SdkClientException If any of the following occurred:
-     * <ul>
-     *     <li>
-     *         The call was transmitted successfully, but Amazon S3 couldn't process it, so it returned an error
-     *         response,
-     *     </li>
-     *     <li>Amazon S3 couldn't be contacted for a response, or</li>
-     *     <li>The client couldn't parse the response from S3.</li>
-     * </ul>
+     * @param s3Key      A key used to uniquely identify the content in S3.
      * @return A {@link PutObjectResult} from the S3 SDK containing information about the upload that was just
      * performed.
+     * @throws IOException        If an I/O error occurred.
+     * @throws SdkClientException If any of the following occurred:
+     *                            <ul>
+     *                                <li>
+     *                                    The call was transmitted successfully, but Amazon S3 couldn't process it,
+     *                                    so it returned an error
+     *                                    response,
+     *                                </li>
+     *                                <li>Amazon S3 couldn't be contacted for a response, or</li>
+     *                                <li>The client couldn't parse the response from S3.</li>
+     *                            </ul>
      */
     public static PutObjectResult uploadImage(BufferedImage image, Regions region, String bucketName, String s3Key)
             throws IOException, SdkClientException {
@@ -80,13 +87,17 @@ public final class S3Helpers {
 
     /**
      * Uploads the provided JSON string to Amazon S3
-     * @param json The JSON to upload.
+     *
+     * @param json     The JSON to upload.
      * @param location The location in Amazon S3 where the JSON will be uploaded to.
      * @return A {@link PutObjectResult} from the S3 SDK containing information about the upload that was just
      * performed.
-     * @throws NullPointerException If {@code location} is {@code null}
-     * @throws UnsupportedEncodingException If there was an error encoding the JSON string as a {@link StringInputStream}
+     * @throws NullPointerException         If {@code location} is {@code null}
+     * @throws UnsupportedEncodingException If there was an error encoding the JSON string as a
+     * {@link StringInputStream}
      */
+    @SuppressWarnings("unused")
+    @PublicApi
     public static PutObjectResult uploadJson(String json, LocalizedS3ObjectId location) throws UnsupportedEncodingException {
         return uploadJson(json,
                 Objects.requireNonNull(location, "'location' cannot be null.").getRegion(),
@@ -95,15 +106,18 @@ public final class S3Helpers {
 
     /**
      * Uploads the provided JSON string to Amazon S3
-     * @param json The JSON to upload.
-     * @param region The region where the JSON will be uploaded
+     *
+     * @param json       The JSON to upload.
+     * @param region     The region where the JSON will be uploaded
      * @param bucketName The name of the S3 bucket the JSON will be uploaded
-     * @param s3Key A key used to uniquely identify the content in S3.
+     * @param s3Key      A key used to uniquely identify the content in S3.
      * @return A {@link PutObjectResult} from the S3 SDK containing information about the upload that was just
      * performed.
-     * @throws UnsupportedEncodingException If there was an error encoding the JSON string as a {@link StringInputStream}
+     * @throws UnsupportedEncodingException If there was an error encoding the JSON string as a
+     * {@link StringInputStream}
      */
-    @SuppressWarnings("UnusedReturnValue")
+    @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
+    @PublicApi
     public static PutObjectResult uploadJson(String json, Regions region, String bucketName, String s3Key) throws UnsupportedEncodingException {
         return upload(json, region, bucketName, s3Key, "application/json");
     }
@@ -114,14 +128,18 @@ public final class S3Helpers {
 
     /**
      * Uploads the provided string content to Amazon S3.
-     * @param content The string content to upload to Amazon S3.
-     * @param location The location in Amazon S3 where the content will be uploaded to.
+     *
+     * @param content     The string content to upload to Amazon S3.
+     * @param location    The location in Amazon S3 where the content will be uploaded to.
      * @param contentType The HTTP Content-Type header indicating the type of content that will be stored in S3.
      * @return A {@link PutObjectResult} from the S3 SDK containing information about the upload that was just
      * performed.
-     * @throws NullPointerException If {@code location} is {@code null}
-     * @throws UnsupportedEncodingException If there was an error encoding the string content as a {@link StringInputStream}
+     * @throws NullPointerException         If {@code location} is {@code null}
+     * @throws UnsupportedEncodingException If there was an error encoding the string content as a
+     * {@link StringInputStream}
      */
+    @SuppressWarnings("unused")
+    @PublicApi
     public static PutObjectResult upload(String content, LocalizedS3ObjectId location, String contentType) throws UnsupportedEncodingException {
         return upload(content,
                 Objects.requireNonNull(location, "'location' cannot be null.").getRegion(),
@@ -130,31 +148,36 @@ public final class S3Helpers {
 
     /**
      * Uploads the provided string content to Amazon S3.
-     * @param content The string content to upload to Amazon S3.
-     * @param region The region where the string content will be uploaded.
-     * @param bucketName The name of the S3 bucket the string content will be uploaded to.
-     * @param s3Key A key used to uniquely identify the content in S3.
+     *
+     * @param content     The string content to upload to Amazon S3.
+     * @param region      The region where the string content will be uploaded.
+     * @param bucketName  The name of the S3 bucket the string content will be uploaded to.
+     * @param s3Key       A key used to uniquely identify the content in S3.
      * @param contentType The HTTP Content-Type header indicating the type of content that will be stored in S3.
      * @return A {@link PutObjectResult} from the S3 SDK containing information about the upload that was just
      * performed.
-     * @throws UnsupportedEncodingException If there was an error encoding the string content as a {@link StringInputStream}
+     * @throws UnsupportedEncodingException If there was an error encoding the string content as a
+     * {@link StringInputStream}
      */
     @SuppressWarnings("WeakerAccess")
     public static PutObjectResult upload(String content, Regions region, String bucketName, String s3Key,
             String contentType) throws UnsupportedEncodingException {
         StringInputStream stringInputStream = new StringInputStream(content);
-        return upload(stringInputStream, region,bucketName, s3Key, contentType);
+        return upload(stringInputStream, region, bucketName, s3Key, contentType);
     }
 
     /**
      * Uploads data contained in the provided {@link InputStream} to Amazon S3.
+     *
      * @param inputStream The {@link InputStream} containing the data to upload to Amazon S3.
-     * @param location The location in Amazon S3 where the data will be uploaded to.
+     * @param location    The location in Amazon S3 where the data will be uploaded to.
      * @param contentType The HTTP Content-Type header indicating the type of content that will be stored in Amazon S3.
      * @return A {@link PutObjectResult} from the S3 SDK containing information about the upload that was just
-     *         performed.
+     * performed.
      * @throws NullPointerException If {@code location} is {@code null}
      */
+    @SuppressWarnings("unused")
+    @PublicApi
     public static PutObjectResult upload(InputStream inputStream, LocalizedS3ObjectId location, String contentType) {
         return upload(inputStream,
                 Objects.requireNonNull(location, "'location' cannot be null").getRegion(),
@@ -163,10 +186,11 @@ public final class S3Helpers {
 
     /**
      * Uploads data contained in the provided {@link InputStream} to Amazon S3.
+     *
      * @param inputStream The {@link InputStream} containing the data to upload to Amazon S3.
-     * @param region The region where the string content will be uploaded.
-     * @param bucketName The name of the S3 bucket the string content will be uploaded to.
-     * @param s3Key A key used to uniquely identify the content in S3.
+     * @param region      The region where the string content will be uploaded.
+     * @param bucketName  The name of the S3 bucket the string content will be uploaded to.
+     * @param s3Key       A key used to uniquely identify the content in S3.
      * @param contentType The HTTP Content-Type header indicating the type of content that will be stored in S3.
      * @return A {@link PutObjectResult} from the S3 SDK containing information about the upload that was just
      * performed.
@@ -191,10 +215,13 @@ public final class S3Helpers {
 
     /**
      * Downloads an Amazon S3 object at the bucket and key specified in the provided {@link S3ObjectId}
+     *
      * @param objectId An {@link S3ObjectId} containing the bucket and key for the file to download.
      * @return The downloaded {@link S3Object}
      * @throws NullPointerException {@code objectId} was null.
      */
+    @SuppressWarnings("unused")
+    @PublicApi
     public static S3Object download(S3ObjectId objectId) {
         return download(Objects.requireNonNull(objectId, "'objectId' cannot be null.").getBucket(), objectId.getKey());
     }
@@ -202,22 +229,29 @@ public final class S3Helpers {
     /**
      * Downloads an Amazon S3 object located at the provided bucket and key using the
      * {@linkplain AmazonS3ClientBuilder#defaultClient() default client}.
+     *
      * @param bucketName The name of the bucket that contains the file.
-     * @param key The key of the file to download.
+     * @param key        The key of the file to download.
      * @return The downloaded {@link S3Object}
      */
+    @SuppressWarnings("WeakerAccess")
+    @PublicApi
     public static S3Object download(String bucketName, String key) {
         AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
         return download(s3Client, bucketName, key);
     }
 
     /**
-     * Downloads an Amazon S3 object contained within the AWS Region, bucket, and key in the provided {@link LocalizedS3ObjectId}
+     * Downloads an Amazon S3 object contained within the AWS Region, bucket, and key in the provided
+     * {@link LocalizedS3ObjectId}
+     *
      * @param localizedObjectId The {@link LocalizedS3ObjectId} containing the bucket and key for the S3 object to
      *                          download.
      * @return The downloaded {@link S3Object}
      * @throws NullPointerException If {@code localizedObjectId} is null.
      */
+    @SuppressWarnings("unused")
+    @PublicApi
     public static S3Object download(LocalizedS3ObjectId localizedObjectId) {
         return download(Objects.requireNonNull(localizedObjectId, "'localizedObjectId' cannot be null.").getRegion(),
                 localizedObjectId.getBucket(), localizedObjectId.getKey());
@@ -225,9 +259,10 @@ public final class S3Helpers {
 
     /**
      * Downloads an Amazon S3 object contained within the specified AWS Region, bucket, and key.
-     * @param region The region where the Amazon S3 object is located.
+     *
+     * @param region     The region where the Amazon S3 object is located.
      * @param bucketName The name of the Amazon S3 bucket where the Amazon S3 object is located.
-     * @param key The key of the Amazon S3 object that will be downloaded.
+     * @param key        The key of the Amazon S3 object that will be downloaded.
      * @return The downloaded {@link S3Object}
      */
     public static S3Object download(Regions region, String bucketName, String key) {
@@ -238,11 +273,14 @@ public final class S3Helpers {
     /**
      * Downloads an Amazon S3 object using the provided {@link AmazonS3} client that is located within the specified
      * bucket and has the specified key.
-     * @param s3Client The {@link AmazonS3} client to use to download the S3 object.
+     *
+     * @param s3Client   The {@link AmazonS3} client to use to download the S3 object.
      * @param bucketName The name of the bucket where the S3 object is located.
-     * @param key The key of the Amazon S3 object that will be downloaded.
+     * @param key        The key of the Amazon S3 object that will be downloaded.
      * @return The downloaded {@link S3Object}
      */
+    @SuppressWarnings("WeakerAccess")
+    @PublicApi
     public static S3Object download(AmazonS3 s3Client, String bucketName, String key) {
         GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
         return download(s3Client, getObjectRequest);
@@ -251,11 +289,14 @@ public final class S3Helpers {
     /**
      * Downloads an Amazon S3 object using the provided {@link AmazonS3} client via the provided
      * {@link GetObjectRequest}
-     * @param s3Client The {@link AmazonS3} client to use.
+     *
+     * @param s3Client         The {@link AmazonS3} client to use.
      * @param getObjectRequest The {@link GetObjectRequest} containing additional information regarding the
      *                         Amazon S3 object that will be downloaded, particularly the bucket and key.
      * @return The downloaded {@link S3Object}
      */
+    @SuppressWarnings("WeakerAccess")
+    @PublicApi
     public static S3Object download(AmazonS3 s3Client, GetObjectRequest getObjectRequest) {
         return Objects.requireNonNull(s3Client, "'s3Client' cannot be null.").getObject(
                 Objects.requireNonNull(getObjectRequest, "'getObjectRequest' cannot be null."));
@@ -282,6 +323,7 @@ public final class S3Helpers {
 
     /**
      * Creates and returns an {@link AmazonS3} client for uploading files to the specified AWS Region to Amazon S3.
+     *
      * @param region The AWS Region.
      * @return The {@link AmazonS3} client for uploading files to the specified AWS Region to Amazon S3.
      */
@@ -296,33 +338,79 @@ public final class S3Helpers {
 
     // region Urls
 
-    public static String createS3Uri(String bucket, String path) {
-        return String.format("s3://%s/%s", bucket, path);
+    /**
+     * Creates and returns a URI string in the <i>s3://&lt;bucket&gt;/&lt;key&gt;</i> format that points to an S3
+     * object contained in the specified bucket and that has the specified key.
+     *
+     * @param bucket The bucket name.
+     * @param key    The key name.
+     * @return A URI in the <i>s3://&lt;bucket&gt;/&lt;key&gt;</i> format.
+     */
+    @SuppressWarnings("WeakerAccess")
+    @PublicApi
+    public static String createS3Uri(@Nullable String bucket, @Nullable String key) {
+        return String.format("s3://%s/%s", bucket, key);
     }
 
+    /**
+     * Creates and returns a {@link LocalizedS3ObjectId} pointing to where the folder containing logs for the EMR
+     * cluster should be stored for the satellite with the provided name when the Spark job starts.
+     *
+     * @param satelliteName The name of the satellite to which to logs will correspond to.
+     * @return A {@link LocalizedS3ObjectId} pointing to where the folder containing longs for the EMR cluster should
+     * be stored for the satellite with the provided name when the Spark job starts.
+     */
     @NotNull
     @Contract("_ -> new")
-    public static LocalizedS3ObjectId createHadoopLogFolderId(String satelliteName) {
-        return new LocalizedS3ObjectId(Regions.US_EAST_1, "ahuber-hadoop-logs", String.format("java/%s/",
-                satelliteName));
-    }
-
-    @NotNull
-    @Contract("_ -> new")
-    public static LocalizedS3ObjectId createSparkJobConfigId(String satelliteName) {
-        return new LocalizedS3ObjectId(Regions.US_EAST_1, "ahuber-spark-job-configs", String.format("java/%s.json",
-                satelliteName));
-    }
-
-    @NotNull
-    @Contract("_ -> new")
-    public static LocalizedS3ObjectId createSparkJobJarId(String jarPath) {
-        return new LocalizedS3ObjectId(Regions.US_EAST_1, "danshi", jarPath);
-    }
-
     @SuppressWarnings("unused")
+    @WarningSuppressionReason("Used in external projects.")
+    public static LocalizedS3ObjectId createHadoopLogFolderId(@Nullable String satelliteName) {
+        return new LocalizedS3ObjectId(Regions.US_EAST_1, "ahuber-hadoop-logs",
+                String.format("java/%s/", satelliteName));
+    }
+
+    /**
+     * Creates and returns a {@link LocalizedS3ObjectId} pointing to where the {@link SparkJobConfiguration}
+     * serialized as JSON for the Spark job should be stored given a satellite with the provided name.
+     * @param satelliteName The name of the satellite.
+     * @return A {@link LocalizedS3ObjectId} pointing to where the {@link SparkJobConfiguration} serialized as JSON
+     * for the Spark job should be stored given a satellite with the provided name.
+     */
     @NotNull
     @Contract("_ -> new")
+    @SuppressWarnings("unused")
+    @WarningSuppressionReason("Used in external projects.")
+    public static LocalizedS3ObjectId createSparkJobConfigId(String satelliteName) {
+        return new LocalizedS3ObjectId(Regions.US_EAST_1, "ahuber-spark-job-configs",
+                String.format("java/%s.json", satelliteName));
+    }
+
+    /**
+     * Creates and returns a {@link LocalizedS3ObjectId} pointing to where the executable JAR for the Spark job is
+     * located.
+     * @param key The key of the S3 object that is the executable JAR for the Spark job.
+     * @return A {@link LocalizedS3ObjectId} pointing to where the executable JAR for the Spark job is located.
+     * @implNote The JAR will be stored in {@link Regions#US_EAST_1} in the bucket {@code danshi}.
+     */
+    @NotNull
+    @Contract("_ -> new")
+    @SuppressWarnings("unused")
+    @WarningSuppressionReason("Used in external projects.")
+    public static LocalizedS3ObjectId createSparkJobJarId(String key) {
+        return new LocalizedS3ObjectId(Regions.US_EAST_1, "danshi", key);
+    }
+
+    /**
+     * Creates an returns a {@link LocalizedS3ObjectId} pointing to where the JPEG image for the satellite with the
+     * provided name should be stored.
+     * @param satelliteName The name of the satellite.
+     * @return A {@link LocalizedS3ObjectId} pointing to where the JPEG image for the satellite with the provided
+     * name should be stored.
+     */
+    @NotNull
+    @Contract("_ -> new")
+    @SuppressWarnings("unused")
+    @WarningSuppressionReason("Used in external projects.")
     public static LocalizedS3ObjectId createImageId(String satelliteName) {
         return new LocalizedS3ObjectId(Regions.US_EAST_1, "ahuber-satellite-images", String.format("java/%s.jpg",
                 satelliteName));

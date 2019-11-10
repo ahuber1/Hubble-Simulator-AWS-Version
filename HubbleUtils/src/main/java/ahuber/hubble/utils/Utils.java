@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * A class containing general purpose helper methods.
@@ -78,6 +79,8 @@ public final class Utils {
      */
     @NotNull
     @Contract("null -> fail")
+    @PublicApi
+    @SuppressWarnings("WeakerAccess")
     public static <T> Pair<T, Long> timeMillis(Supplier<T> supplier) {
         long start = System.currentTimeMillis();
         T value = Objects.requireNonNull(supplier, "supplier cannot be null").get();
@@ -94,6 +97,8 @@ public final class Utils {
      */
     @SafeVarargs
     @Contract(value = "_ -> param1", pure = true)
+    @PublicApi
+    @SuppressWarnings("unused")
     public static <T> T[] arrayOf(T...items) {
         return items;
     }
@@ -108,6 +113,8 @@ public final class Utils {
      * @throws NullPointerException If {@code value} and {@code defaultValue} are {@code null}.
      */
     @Contract("!null, _ -> param1; null, !null -> param2; null, null -> fail")
+    @PublicApi
+    @SuppressWarnings("WeakerAccess")
     public static <T> T requireNonNullElse(T value, T defaultValue) {
         return requireNonNullElse(value, defaultValue, x -> x);
     }
@@ -129,6 +136,8 @@ public final class Utils {
      * if both {@code value} and {@code defaultValue} are null.
      */
     @Contract("!null, _, !null -> _; !null, _, null -> fail; null, !null, _ -> param2; null, null, _ -> fail")
+    @PublicApi
+    @SuppressWarnings("WeakerAccess")
     public static <T, R> R requireNonNullElse(T value, R defaultValue, Function<T, R> transformation) {
         if (Objects.nonNull(value)) {
             return Objects.requireNonNull(transformation, "'transformation' cannot be null").apply(value);
@@ -171,6 +180,8 @@ public final class Utils {
      * {@link System#out} is used.
      */
     @NotNull
+    @PublicApi
+    @SuppressWarnings("unused")
     public static Logger getLogger(@Nullable Context context) {
         LambdaLogger lambdaLogger;
 
@@ -181,7 +192,14 @@ public final class Utils {
         return lambdaLogger::log;
     }
 
+    /**
+     * Creates a boolean stream containing the provided values.
+     * @param values The values in the stream.
+     * @return A stream containing the provided boolean values or an empty stream if {@code values} is {@code null}.
+     */
     @Contract("null -> !null")
+    @PublicApi
+    @SuppressWarnings("unused")
     public static Stream<Boolean> streamOf(boolean...values) {
         if (values == null) {
             return Stream.empty();
@@ -189,4 +207,71 @@ public final class Utils {
 
         return IntStream.range(0, values.length).mapToObj(index -> values[index]);
     }
+
+    /**
+     * Converts an {@link Iterable} to a sequential {@link Stream}
+     * @param iterable The {@link Iterable}
+     * @param <T> The type of items in the {@link Iterable}
+     * @return The {@link Stream} containing the items in the {@link Iterable} or an empty {@link Stream} if
+     * {@code iterable} is {@code null}.
+     */
+    public static <T> Stream<T> toStream(Iterable<T> iterable) {
+        return toStream(iterable, false);
+    }
+
+    /**
+     * Converts an {@link Iterable} to an {@link Stream}
+     * @param iterable The {@link Iterable}
+     * @param parallel {@code true} if the stream is a parallel stream, {@code false} if the stream is sequential.
+     * @param <T> The type of items in the {@link Iterable}
+     * @return The sequential or parallel {@link Stream} containing the items in the {@link Iterable} or an empty
+     * {@link Stream} if {@code iterable} is {@code null}.
+     */
+    @NotNull
+    @PublicApi
+    @SuppressWarnings("WeakerAccess")
+    public static <T> Stream<T> toStream(Iterable<T> iterable, boolean parallel) {
+        return iterable == null ? Stream.empty() : StreamSupport.stream(iterable.spliterator(), parallel);
+    }
+
+    //region Normalization
+
+    /**
+     * Normalizes the provided {@code int} array into a {@code byte} array. This is an O(n) operation.
+     * @param data The {@code int} array
+     * @return A {@code byte} array where each item is the normalized equivalent of the {@code int} value in the same
+     * position as the input {@code int} array.
+     * @throws NullPointerException If the {@code int} array is {@code null}.
+     * @see #normalize(int)
+     */
+    @SuppressWarnings("WeakerAccess")
+    @NotNull
+    @PublicApi
+    public static byte[] normalize(int[] data) {
+        Objects.requireNonNull(data, String.format("The int array \"%s\" cannot be null.", "data"));
+        byte[] bytes = new byte[data.length];
+
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = normalize(data[i]);
+        }
+
+        return bytes;
+    }
+
+    /**
+     * Normalizes the provided {@code int} value as a {@code byte} value.
+     * @param value The {@code int} value.
+     * @return The {@code int} value normalized as a {@code byte} value.
+     * @see #normalize(int[])
+     */
+    @SuppressWarnings("WeakerAccess")
+    @Contract(pure = true)
+    @PublicApi
+    public static byte normalize(int value)
+    {
+        double minInteger = Integer.MIN_VALUE;
+        double maxInteger = Integer.MAX_VALUE;
+        return (byte) ((value - minInteger) / (maxInteger - minInteger) * (Byte.MAX_VALUE - Byte.MIN_VALUE) + Byte.MIN_VALUE);
+    }
+    //endregion
 }

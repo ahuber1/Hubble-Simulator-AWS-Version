@@ -1,10 +1,13 @@
 package ahuber.hubble.adt;
 
+import ahuber.hubble.utils.DocumentationInherited;
+import ahuber.hubble.utils.PublicApi;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
+import java.lang.annotation.Documented;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -34,6 +37,8 @@ public class StandardArrayWrapper<T> implements ArrayWrapper<T> {
      * @throws NullPointerException If {@code array} is {@code null}.
      */
     @Contract("null, _ -> fail")
+    @SuppressWarnings("WeakerAccess")
+    @PublicApi
     public StandardArrayWrapper(@NotNull T[] array, @Range(from = 0, to = Integer.MAX_VALUE) int length) {
         if (length < 0) {
             throw new IllegalArgumentException(String.format("The length cannot be negative. " +
@@ -56,25 +61,30 @@ public class StandardArrayWrapper<T> implements ArrayWrapper<T> {
         return array;
     }
 
+
     @Override
+    @DocumentationInherited
     public int length() {
         return array.length;
     }
 
     @Nullable
     @Override
+    @DocumentationInherited
     public T get(int index) {
         return array[index];
     }
 
     @Override
+    @DocumentationInherited
     public void set(int index, @Nullable T item) {
         array[index] = item;
     }
 
 
-    @SuppressWarnings("SuspiciousSystemArraycopy")
     @Override
+    @DocumentationInherited
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     public void copyArray(int srcPos, @NotNull Object dest, int destPos, int length) {
         System.arraycopy(array, srcPos, dest, destPos, length);
     }

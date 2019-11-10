@@ -1,5 +1,6 @@
 package ahuber.hubble.adt;
 
+import ahuber.hubble.utils.IndexedValue;
 import ahuber.hubble.utils.Utils;
 import ahuber.hubble.utils.WarningSuppressionReason;
 import org.jetbrains.annotations.Contract;
@@ -162,6 +163,7 @@ public class AbstractBuffer<T, TBuffer extends AbstractBuffer<T, TBuffer>> imple
      * @return {@code array} with all of the buffer's contents copied into it.
      * @throws NullPointerException If {@code array} is {@code null}
      */
+    @SuppressWarnings("unchecked")
     @NotNull
     @Override
     public synchronized <T1> T1[] toArray(@NotNull T1[] array) {
@@ -171,7 +173,6 @@ public class AbstractBuffer<T, TBuffer extends AbstractBuffer<T, TBuffer>> imple
             array = Arrays.copyOf(array, size());
         }
 
-        //noinspection unchecked
         return (T1[]) copyToArray(array);
     }
 
@@ -227,12 +228,12 @@ public class AbstractBuffer<T, TBuffer extends AbstractBuffer<T, TBuffer>> imple
         int previousPosition = -1;
 
         while (iterator.hasNext()) {
-            IndexedItem indexedItem = iterator.next();
+            IndexedValue<T> indexedValue = iterator.next();
 
             // If we did not find the item to remove
             if (previousPosition == -1) {
-                if (Objects.equals(indexedItem.getItem(), item)) {
-                    previousPosition = indexedItem.getIndex();
+                if (Objects.equals(indexedValue.getItem(), item)) {
+                    previousPosition = indexedValue.getIndex();
                 }
 
                 continue;
@@ -241,7 +242,7 @@ public class AbstractBuffer<T, TBuffer extends AbstractBuffer<T, TBuffer>> imple
             // If we did find the item to remove, swap with the previous item. Doing this repetitively moves the
             // remaining items in the buffer to the left by one and propagates the removed item to the end of the
             // buffer.
-            int currentPosition = indexedItem.getIndex();
+            int currentPosition = indexedValue.getIndex();
             wrapper.swap(previousPosition, currentPosition);
             previousPosition = currentPosition;
         }
@@ -483,23 +484,16 @@ public class AbstractBuffer<T, TBuffer extends AbstractBuffer<T, TBuffer>> imple
     @SuppressWarnings("WeakerAccess")
     @WarningSuppressionReason("Method could be useful in external projects.")
     public synchronized boolean retainAll(@NotNull Iterable<?> iterable) {
-        // TODO Optimize
         Objects.requireNonNull(iterable, "The iterable cannot be null");
         List<T> itemsToRemove = new ArrayList<>(size());
 
         for (T bufferItem : this) {
-            boolean contains = false;
+            boolean contains;
 
             if (iterable instanceof Collection<?>) {
                 contains = ((Collection<?>) iterable).contains(bufferItem);
             } else {
-                for (Object keepItem : iterable) {
-                    if (!Objects.equals(keepItem, bufferItem)) {
-                        continue;
-                    }
-                    contains = true;
-                    break;
-                }
+                contains = Utils.toStream(iterable).anyMatch(keepItem -> Objects.equals(keepItem, bufferItem));
             }
 
             if (contains) {
@@ -549,6 +543,9 @@ public class AbstractBuffer<T, TBuffer extends AbstractBuffer<T, TBuffer>> imple
      * @param <A>               The {@link ArrayWrapper} type that {@code arrayCopySupplier} returns.
      * @return The {@link ArrayWrapper} returned by {@code arrayCopySupplier}
      */
+    @SuppressWarnings("WeakerAccess")
+    @WarningSuppressionReason("Making it protected allows child classes in external projects to use this method in " +
+            "their implementation of their take method.")
     protected synchronized <A extends ArrayWrapper<T>> A take(int n, @NotNull Function<Integer, A> arrayCopySupplier) {
         return makeBulkChanges(() -> {
             int clampedN = Utils.clamp(n, 0, size() - 1);
@@ -577,10 +574,13 @@ public class AbstractBuffer<T, TBuffer extends AbstractBuffer<T, TBuffer>> imple
      *
      * @param action A {@link Supplier} that performs the action and returns a value (typically a {@code boolean})
      *               indicating success/failure.
-     * @param <T1>   The type of data the {@link Supplier} returns.
+     * @param <R>   The type of data the {@link Supplier} returns.
      * @return The value returned by {@code action}.
      */
-    protected synchronized <T1> T1 makeBulkChanges(@NotNull Supplier<T1> action) {
+    @SuppressWarnings("WeakerAccess")
+    @WarningSuppressionReason("Making it protected allows child classes to use this method in the event they perform " +
+            "bulk changes.")
+    protected synchronized <R> R makeBulkChanges(@NotNull Supplier<R> action) {
         int previousSize = size();
 
         try {
@@ -687,28 +687,7 @@ public class AbstractBuffer<T, TBuffer extends AbstractBuffer<T, TBuffer>> imple
 
     // region Inner classes
 
-    private class IndexedItem {
-        @Nullable
-        private final T item;
-        private final int index;
-
-        @Contract(pure = true)
-        IndexedItem(@Nullable T item, int index) {
-            this.item = item;
-            this.index = index;
-        }
-
-        int getIndex() {
-            return index;
-        }
-
-        @Contract(pure = true)
-        private @Nullable T getItem() {
-            return item;
-        }
-    }
-
-    private class IndexedIterator implements Iterator<IndexedItem> {
+    private class IndexedIterator implements Iterator<IndexedValue<T>> {
         @NotNull
         private final Object[] array;
         private int index;
@@ -729,7 +708,7 @@ public class AbstractBuffer<T, TBuffer extends AbstractBuffer<T, TBuffer>> imple
 
         @SuppressWarnings("unchecked")
         @Override
-        public IndexedItem next() {
+        public IndexedValue<T> next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
@@ -737,7 +716,7 @@ public class AbstractBuffer<T, TBuffer extends AbstractBuffer<T, TBuffer>> imple
             int index = this.index;
             this.index = incrementIndex(this.index, array.length);
             ++returnCount;
-            return new IndexedItem((T) array[index], index);
+            return new IndexedValue<>(index, (T) array[index]);
         }
     }
 

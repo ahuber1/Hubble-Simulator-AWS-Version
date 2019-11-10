@@ -1,5 +1,6 @@
 package ahuber.hubble.adt;
 
+import ahuber.hubble.utils.PublicApi;
 import ahuber.hubble.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,6 +26,8 @@ public class IntBuffer extends AbstractBuffer<Integer, IntBuffer> {
      * @throws NullPointerException If {@code array} is {@code null}
      * @throws IllegalArgumentException If the length of {@code array} is zero.
      */
+    @SuppressWarnings("WeakerAccess")
+    @PublicApi
     public IntBuffer(@NotNull int[] array) {
         this(new IntArrayWrapper(Objects.requireNonNull(array, "The array cannot be null.")));
     }
@@ -62,6 +65,8 @@ public class IntBuffer extends AbstractBuffer<Integer, IntBuffer> {
      * not have enough remaining space to accommodate all of the items.
      * @throws NullPointerException If {@code items} is {@code null}.
      */
+    @SuppressWarnings("WeakerAccess")
+    @PublicApi
     public synchronized boolean addAll(boolean failIfInsufficientSpace, @NotNull int... items) {
         IntArrayWrapper wrapper = new IntArrayWrapper(Objects.requireNonNull(items, "The items cannot be null"));
         return addAll(wrapper, failIfInsufficientSpace);
@@ -105,6 +110,8 @@ public class IntBuffer extends AbstractBuffer<Integer, IntBuffer> {
      * @param n The number of elements to copy. This value is clamped in the range [0, {@link #size()}]
      * @return An {@code int} array containing the first {@code n} elements.
      */
+    @SuppressWarnings("WeakerAccess")
+    @PublicApi
     public synchronized int[] toIntArray(int n) {
         n = Utils.clamp(n, 0, size());
         int[] array = new int[n];

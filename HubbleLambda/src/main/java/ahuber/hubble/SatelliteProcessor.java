@@ -26,27 +26,51 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+/**
+ * An object that processes data that is produced by our {@linkplain Satellite Hubble Space Telescope}.
+ */
 public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable {
 
     private static final String TERMINATE_CLUSTER_ACTION = "TERMINATE_CLUSTER";
+
     private final Semaphore semaphore = new Semaphore(1);
-    @NotNull private final String satelliteName;
-    private final int threshold;
-    @NotNull private final LocalizedS3ObjectId sparkJobConfigLocation;
+    //private final int threshold;
     private final Regions emrRegion;
-    @NotNull private final LocalizedS3ObjectId logFolderLocation;
-    @NotNull private final LocalizedS3ObjectId sparkJobJarLocation;
-    @NotNull private final String[] sparkJobJarArgs;
+
+    @NotNull
+    private final LocalizedS3ObjectId sparkJobConfigLocation;
+    @NotNull
+    private final LocalizedS3ObjectId logFolderLocation;
+    @NotNull
+    private final LocalizedS3ObjectId sparkJobJarLocation;
+    @NotNull
+    private final String[] sparkJobJarArgs;
+    @NotNull
     private final String sparkJobClass;
+    @NotNull
+    private final Function<int[], SparkJobConfiguration> configurationSupplier;
 
-    public SatelliteProcessor(String satelliteName, int threshold, Regions emrRegion, LocalizedS3ObjectId logFolderLocation,
-            LocalizedS3ObjectId sparkJobConfigLocation, LocalizedS3ObjectId sparkJobJarLocation, String sparkJobClass, String... sparkJobJarArgs) {
+    /**
+     * Creates a new {@link SatelliteProcessor}
+     * @param configurationSupplier A function that returns a {@link SparkJobConfiguration} containing the specified
+     * @param emrRegion
+     * @param logFolderLocation
+     * @param sparkJobConfigLocation
+     * @param sparkJobJarLocation
+     * @param sparkJobClass
+     * @param sparkJobJarArgs
+     */
+    public SatelliteProcessor(Function<int[], SparkJobConfiguration> configurationSupplier,
+            Regions emrRegion, LocalizedS3ObjectId logFolderLocation, LocalizedS3ObjectId sparkJobConfigLocation,
+            LocalizedS3ObjectId sparkJobJarLocation, String sparkJobClass, String... sparkJobJarArgs) {
 
-        this.satelliteName = Objects.requireNonNull(satelliteName, "'satelliteName' cannot be null.");
-        this.threshold = threshold;
-        this.sparkJobConfigLocation = Objects.requireNonNull(sparkJobConfigLocation, "'sparkJobConfigUri' cannot be null.");
+        this.configurationSupplier = Objects.requireNonNull(configurationSupplier,
+                "'configurationSupplier' cannot be null.");
+        this.sparkJobConfigLocation = Objects.requireNonNull(sparkJobConfigLocation,
+                "'sparkJobConfigUri' cannot be null.");
         this.emrRegion = Objects.requireNonNull(emrRegion, "'emrRegion' cannot be null.");
         this.logFolderLocation = Objects.requireNonNull(logFolderLocation, "'logUri' cannot be null.");
         this.sparkJobJarLocation = Objects.requireNonNull(sparkJobJarLocation, "'sparkJobJarUri' cannot be null.");
@@ -71,7 +95,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
     public void onReceived(@NotNull IntArrayWrapper data) {
         // Get the data and upload it to Amazon S3 for processing.
         int[] array = data.getArray();
-        SparkJobConfiguration configuration = new SparkJobConfiguration(satelliteName, threshold, array);
+        SparkJobConfiguration configuration = configurationSupplier.apply(array);
 
         try {
             uploadSparkJobConfigurationToAmazonS3(configuration, sparkJobConfigLocation);
@@ -93,12 +117,13 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
 
     /**
      * Starts the Hadoop Cluster
-     * @param emrRegion The region where the Hadoop Cluster is located.
-     * @param logLocationId The location of the folder where logs for the Hadoop job be stored.
+     *
+     * @param emrRegion             The region where the Hadoop Cluster is located.
+     * @param logLocationId         The location of the folder where logs for the Hadoop job be stored.
      * @param sparkJobJarLocationId The location of the JAR on Amazon S3 containing the code that will be executed
-     *                           during the Spark Job.
-     * @param sparkJobClass The fully-qualified class name containing the entry point of the Spark job.
-     * @param sparkJobJarArgs Additional arguments that will be passed to {@code sparkJobJarLocationId}
+     *                              during the Spark Job.
+     * @param sparkJobClass         The fully-qualified class name containing the entry point of the Spark job.
+     * @param sparkJobJarArgs       Additional arguments that will be passed to {@code sparkJobJarLocationId}
      * @return A {@link RunJobFlowResult} containing additional information pertaining to the request made to start
      * the Hadoop Cluster.
      */
@@ -160,13 +185,14 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
     /**
      * Creates an array of {@link StepConfig} objects containing a step for enabling debugging in the AWS Management
      * Console followed by the provided steps.
+     *
      * @param steps The additional steps to execute following the "enable debugging" step.
      * @return An array containing the step for enabling debugging int the AWS Management Console followed by the
      * steps in {@code steps}
      * @apiNote Any {@link StepConfig} object in {@code steps} that is {@code null} will not be in the returned array.
      */
     @NotNull
-    private StepConfig[] prefaceStepsWithEnableDebugStep(StepConfig...steps) {
+    private StepConfig[] prefaceStepsWithEnableDebugStep(StepConfig... steps) {
         // Create a step to enable debugging in the AWS Management Console
         StepFactory stepFactory = new StepFactory();
 
@@ -187,11 +213,13 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
 
     /**
      * Uploads the provided {@link SparkJobConfiguration} to Amazon S3 as JSON
-     * @param configuration The {@link SparkJobConfiguration} to upload.
+     *
+     * @param configuration                   The {@link SparkJobConfiguration} to upload.
      * @param sparkJobConfigurationS3Location The location in Amazon S3 where the JSON should be uploaded to.
      * @return A {@link PutObjectResult} containing information about the upload to Amazon S3.
-     * @throws IOException If an error occurs while serializing {@code configuration} as a JSON string or if that
-     * JSON string was unable to be converted to a stream for upload to Amazon S3.
+     * @throws IOException          If an error occurs while serializing {@code configuration} as a JSON string or if
+     * that
+     *                              JSON string was unable to be converted to a stream for upload to Amazon S3.
      * @throws NullPointerException If any parameter is {@code null}
      */
     @SuppressWarnings("UnusedReturnValue")

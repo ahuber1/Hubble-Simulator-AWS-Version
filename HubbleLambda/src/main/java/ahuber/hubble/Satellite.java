@@ -1,6 +1,5 @@
 package ahuber.hubble;
 
-import ahuber.hubble.adt.Buffer;
 import ahuber.hubble.adt.IntBuffer;
 import ahuber.hubble.adt.SizeObserver;
 import org.jetbrains.annotations.NotNull;
@@ -8,11 +7,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
+/**
+ * A class representing the Hubble Space Telescope, which in this instance produces random integer data that is
+ * placed inside of an {@link IntBuffer}.
+ */
 public class Satellite implements SizeObserver<IntBuffer>, Runnable {
     @NotNull private final IntBuffer buffer;
     @NotNull private final Semaphore semaphore = new Semaphore(1);
     @NotNull private final Random random = new Random();
 
+    /**
+     * Creates a new Hubble Space Telescope that puts random integer data in the provided {@link IntBuffer}
+     * @param buffer The {@link IntBuffer} into which to place the random integer data.
+     */
     public Satellite(@NotNull IntBuffer buffer) {
         this.buffer = buffer;
     }
@@ -24,6 +31,9 @@ public class Satellite implements SizeObserver<IntBuffer>, Runnable {
         semaphore.release();
     }
 
+    /**
+     * Starts the Hubble Space Telescope.
+     */
     @Override
     public void run() {
         try {

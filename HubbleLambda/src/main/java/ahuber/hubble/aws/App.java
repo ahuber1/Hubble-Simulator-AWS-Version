@@ -13,6 +13,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.event.S3EventNotification;
 import com.amazonaws.services.s3.model.S3Object;
+import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,33 +22,20 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
+/**
+ * The AWS Lambda function that responds to an S3 event for a JSON file being uploaded to an S3 bucket that can be
+ * deserialized as a {@link SatelliteConfiguration} that specifies the <i>i</i> and <i>j</i> values that determines
+ * how the Hubble Satellite simulation runs.
+ */
 public class App implements RequestHandler<S3Event, String> {
     private static final Regions EMR_REGION = Regions.US_EAST_1;
     private static final String SPARK_JOB_CLASS = "ahuber.hubble.spark.SparkDriver";
-    private final String satelliteName;
-    private final LocalizedS3ObjectId logFolderId;
-    private final LocalizedS3ObjectId sparkJobConfigId;
-    private final LocalizedS3ObjectId sparkJobJarId;
-    private final String[] sparkJobJarArgs;
-
-    public App() {
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
-        UUID id = UUID.randomUUID();
-        String dateString = formatter.format(now);
-
-        satelliteName = String.format("%s_%s", dateString, id);
-        logFolderId = S3Helpers.createHadoopLogFolderId(satelliteName);
-        sparkJobConfigId = S3Helpers.createSparkJobConfigId(satelliteName);
-        sparkJobJarId = S3Helpers.createSparkJobJarId("java/HubbleAWSEMR-1.0.jar");
-        sparkJobJarArgs = new String[] { sparkJobConfigId.getStringUri(), Regions.US_EAST_1.getName() };
-    }
 
     @Override
     public String handleRequest(S3Event input, Context context) {
@@ -89,7 +77,19 @@ public class App implements RequestHandler<S3Event, String> {
         return output;
     }
 
-    public String process(String bucket, String key) throws IOException {
+    /**
+     * Provides an alternative entry point for the AWS Lambda function where instead of the input being an
+     * {@link S3Event}, the input is the S3 bucket and key for a pre-existing JSON file that can be deserialized as a
+     * {@link SatelliteConfiguration} object that determines how this Hubble Satellite simulation will run.
+     *
+     * @param bucket The bucket name.
+     * @param key    The key for the S3 object that corresponds to the JSON file that can be deserialized as a
+     *               {@link SatelliteConfiguration} object that determines how this Hubble Satellite simulation will
+     *               run.
+     * @return The number of milliseconds the satellite was running.
+     * @throws IOException If an I/O error occurs.
+     */
+    public long process(@NotNull String bucket, @NotNull String key) throws IOException {
         return processS3Entity(bucket, key, Utils.getLogger(null));
     }
 
@@ -130,7 +130,7 @@ public class App implements RequestHandler<S3Event, String> {
                 continue;
             }
 
-             // Get the S3Entity
+            // Get the S3Entity
             S3EventNotification.S3Entity s3Entity = record.getS3();
 
             if (s3Entity == null) {
@@ -153,7 +153,9 @@ public class App implements RequestHandler<S3Event, String> {
             }
 
             try {
-                resultMapping[i] = processS3Entity(bucket, key, logger);
+                long elapsedMilliseconds = processS3Entity(bucket, key, logger);
+                resultMapping[i] = String.format("Satellite has been shut down. " +
+                        "Satellite ran for %,d milliseconds", elapsedMilliseconds);
                 errorMapping[i] = false; // Indicate that this S3 Object was successfully processed.
             } catch (Exception e) {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -217,7 +219,7 @@ public class App implements RequestHandler<S3Event, String> {
         return String.format("Unable to get %s", classObject.getSimpleName());
     }
 
-    private String processS3Entity(@NotNull String bucket, @NotNull String key, @NotNull Logger logger) throws IOException {
+    private long processS3Entity(@NotNull String bucket, @NotNull String key, @NotNull Logger logger) throws IOException {
         // Download the content
         logger.logLine("Downloading S3 object located in bucket \"%s\" and that has key \"%s\"...", bucket, key);
 
@@ -234,21 +236,26 @@ public class App implements RequestHandler<S3Event, String> {
 
     }
 
-    private String process(@NotNull SatelliteConfiguration configuration, @NotNull Logger logger) {
+    private long process(@NotNull SatelliteConfiguration configuration, @NotNull Logger logger) {
+        S3SatelliteSessionConfig sessionConfig =
+                new S3SatelliteSessionConfig(configuration.getI(), configuration.getJ());
+
         // Calculate variables that determine how the satellite will behave
-        int n = (int) Math.pow(2, configuration.i);
-        int t = (int) Math.pow(10, configuration.j);
+        int n = (int) Math.pow(2, configuration.getI());
+        int t = (int) Math.pow(10, configuration.getJ());
         int receiverThreshold = (int) Math.pow(n, 2);
         int bufferSize = receiverThreshold * 2;
 
         logger.logLine("Running simulation: \"{%s}\"\n\tn = {%d}, t = {%d}, bufferSize = {%d}, " +
-                "receiverThreshold = {%d}", satelliteName, n, t, bufferSize, receiverThreshold);
+                "receiverThreshold = {%d}", sessionConfig.getSatelliteName(), n, t, bufferSize, receiverThreshold);
 
         // Create the buffer, satellite, processor, and receiver
         IntBuffer buffer = new IntBuffer(bufferSize);
         Satellite satellite = new Satellite(buffer);
-        SatelliteProcessor processor = new SatelliteProcessor(satelliteName, t, EMR_REGION, logFolderId,
-                sparkJobConfigId, sparkJobJarId, SPARK_JOB_CLASS, sparkJobJarArgs);
+        SatelliteProcessor processor = new SatelliteProcessor(
+                array -> new SparkJobConfiguration(sessionConfig.getSatelliteName(), t, array), EMR_REGION,
+                sessionConfig.getLogFolderId(), sessionConfig.getSparkJobConfigId(), sessionConfig.getSparkJobJarId(),
+                SPARK_JOB_CLASS, sessionConfig.getSparkJobJarArgs());
         Receiver receiver = new Receiver(buffer, processor, receiverThreshold);
 
         // Create the threads
@@ -257,7 +264,7 @@ public class App implements RequestHandler<S3Event, String> {
         Thread receiverThread = new Thread(receiver, "Receiver");
 
         // Run the threads inside a timed block.
-        long elapsedMilliseconds = Utils.timeMillis(() -> {
+        return Utils.timeMillis(() -> {
             // Start the threads.
             satelliteThread.start();
             processorThread.start();
@@ -274,9 +281,27 @@ public class App implements RequestHandler<S3Event, String> {
             satelliteThread.interrupt();
             receiverThread.interrupt();
         });
-
-        // Log the elapsed duration
-        return String.format("Satellite has been shut down. Satellite ran for %,d milliseconds.", elapsedMilliseconds);
     }
 
+    @Value
+    @NotNull
+    private static class S3SatelliteSessionConfig {
+        private final String satelliteName;
+        private final LocalizedS3ObjectId logFolderId;
+        private final LocalizedS3ObjectId sparkJobConfigId;
+        private final LocalizedS3ObjectId sparkJobJarId;
+        private final String[] sparkJobJarArgs;
+
+        S3SatelliteSessionConfig(int i, int j) {
+            LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+            String dateString = formatter.format(now);
+
+            satelliteName = String.format("%s_i=%d_j=%d", dateString, i, j);
+            logFolderId = S3Helpers.createHadoopLogFolderId(satelliteName);
+            sparkJobConfigId = S3Helpers.createSparkJobConfigId(satelliteName);
+            sparkJobJarId = S3Helpers.createSparkJobJarId("java/HubbleAWSEMR-1.0.jar");
+            sparkJobJarArgs = new String[]{sparkJobConfigId.getStringUri(), Regions.US_EAST_1.getName()};
+        }
+    }
 }

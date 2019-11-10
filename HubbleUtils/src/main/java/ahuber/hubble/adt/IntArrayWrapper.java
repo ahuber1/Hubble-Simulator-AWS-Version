@@ -1,5 +1,7 @@
 package ahuber.hubble.adt;
 
+import ahuber.hubble.utils.PublicApi;
+import ahuber.hubble.utils.WarningSuppressionReason;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,6 +19,8 @@ public class IntArrayWrapper implements ArrayWrapper<Integer> {
      * has the specified length.
      * @param length THe length of the {@code int} array
      */
+    @SuppressWarnings("WeakerAccess")
+    @PublicApi
     @Contract(pure = true)
     public IntArrayWrapper(int length) {
         this(new int[length]);
@@ -38,7 +42,6 @@ public class IntArrayWrapper implements ArrayWrapper<Integer> {
     public int[] getArray() {
         return array;
     }
-
 
     @Override
     public int length() {
@@ -62,6 +65,8 @@ public class IntArrayWrapper implements ArrayWrapper<Integer> {
      * @param item The item to add to the underlying array.
      * @param index The index at which to add {@code item} to the underlying array.
      */
+    @SuppressWarnings("WeakerAccess")
+    @PublicApi
     public void set(int item, int index) {
         array[index] = item;
     }
@@ -69,7 +74,7 @@ public class IntArrayWrapper implements ArrayWrapper<Integer> {
     @Override
     public void set(int index, @Nullable Integer item) {
         int value = item == null ? 0 : item;
-        set (value, index);
+        set(value, index);
     }
 
     @Override
