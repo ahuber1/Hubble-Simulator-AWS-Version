@@ -1,8 +1,16 @@
-# Hubble Simulator (AWS Version)
+# Hubble Simulator (AWS Version) <!-- omit in toc -->
 
 The original [Hubble Simulator project](https://github.com/ahuber1/Project5) was one of the programming projects I completed in college in 2014, When I was looking to start a Java project that uses AWS's services, I decided to replicate the original project while using as many AWS services as possible. Originally, this was intended to be a simple AWS Lambda function, but S3 and EMR were also incorporated. 
 
 This README contains a version of the [original project description](https://github.com/ahuber1/Project5/blob/master/project05%20_1_.pdf), but has been modified when necessary to describe how the program runs using AWS's services.
+
+- [Directory Structure](#directory-structure)
+- [Project Overview](#project-overview)
+  - [Objectives](#objectives)
+  - [Primary Requirements](#primary-requirements)
+  - [Amazon Web Services](#amazon-web-services)
+    - [The Lambda function](#the-lambda-function)
+    - [Sending Data for Processing](#sending-data-for-processing)
 
 ## Directory Structure
 
@@ -53,17 +61,12 @@ Three concurrent threads will be in charge of _collecting_, _storing_, and _rece
 
     6. **Upload the image to Amazon S3.** 
 
-#### Amazon Web Services
+### Amazon Web Services
 
 There is not one program that performs all four steps that will execute in the simulation. Instead, the first three steps &mdash;_collecting_, _storing_, and _receiving_&mdash;will be performed inside an AWS Lambda function, and the final step, _processing_, will be performed in an executable JAR that will run on an EMR cluster. The Lambda function and executable JAR receive JSON file(s) as input: the Lambda function will receive the JSON file(s) through an S3 event and the JAR will receive a URI in the _s3://&lt;bucket&gt;/&lt;path&gt;/&lt;to&gt;/&lt;file&gt;_ that points to the JSON file created and uploaded by the Lambda function that requested the EMR cluster in the first place. The executable JAR also will have the responsibility of outputting the processed data into a greyscale image and uploading it to S3.
 
-As you can see in the diagram below, which outlines the flow of data to and from the AWS Lambda function and the executable JAR, there are two files that are uploaded to S3 each time the simulation runs in its entirety in the AWS Lambda function and the EMR cluster (see Steps 4 and 7). In order to uniquely identify each simulation, the files should be named after the name of the simulation, which is in the following format.
-
-<center>
-&lt;<em>date</em>&gt;<code>_</code>&lt;<em>time</em>&gt;<code>i=</code>&lt;<em>i</em>&gt;<code>_j=</code>&lt;<em>j</em>&gt;
-</center>
-
-Where:
+As you can see in the diagram below, which outlines the flow of data to and from the AWS Lambda function and the executable JAR, there are two files that are uploaded to S3 each time the simulation runs in its entirety in the AWS Lambda function and the EMR cluster (see Steps 4 and 7). In order to uniquely identify each simulation, the files should be named after the name of the simulation, which is in the
+<u><b>&lt;<em>date</em>&gt;<code>_</code>&lt;<em>time</em>&gt;<code>i=</code>&lt;<em>i</em>&gt;<code>_j=</code>&lt;<em>j</em>&gt;</b></u> format where:
 
 - ***&lt;date&gt;*** is the current date in GMT in the `yyyy-MM-dd` format.
 - ***&lt;time&gt;*** is the current time of day in GMT in the `HH-mm-ss` format.
@@ -74,7 +77,7 @@ For example, if the current date and time is November 10, 2019 at 12:42 PM, and 
 
 ![simulation_s3_file_flow.png](./README_Files/simulation_s3_file_flow.png)
 
-##### The Lambda function
+#### The Lambda function
 
 The first three steps &mdash;_collecting_, _storing_, and _receiving_&mdash; should all occur inside a Lambda function. The Lambda function needs to respond to an S3 Event that is triggered when a JSON file is uploaded to the `ahuber-satellite-configs` bucket inside the `java` folder. This JSON follows the following schema:
 
@@ -106,7 +109,7 @@ For example, the following JSON would be considered valid:
 
 The _collecting_, _storing_, and _receiving_ steps should then run based on these values, which will, in turn, give you the value of $N$ and $T$ for the Hubble simulation.
 
-##### Sending Data for Processing
+#### Sending Data for Processing
 
 Once the data has been received, an EMR cluster then needs to launch with a URI to an input JSON file as input. The URI should be in the _s3://&lt;bucket&gt;/&lt;path&gt;/&lt;to&gt;/&lt;file&gt;_ format. This JSON file should be stored in the `ahuber-spark-job-configs` bucket in the `java` folder. This JSON follows the following schema:
 
