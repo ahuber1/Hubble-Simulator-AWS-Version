@@ -2,15 +2,11 @@ package ahuber.hubble;
 
 import ahuber.hubble.adt.ArrayUtils;
 import ahuber.hubble.adt.IntArrayWrapper;
-import ahuber.hubble.aws.S3Helpers;
 import ahuber.hubble.aws.LocalizedS3ObjectId;
+import ahuber.hubble.aws.S3Helpers;
 import ahuber.hubble.aws.SparkJobConfiguration;
 import ahuber.hubble.utils.Utils;
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.jmespath.ObjectMapperSingleton;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.elasticmapreduce.AmazonElasticMapReduce;
