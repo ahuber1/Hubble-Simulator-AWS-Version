@@ -7,6 +7,7 @@ This README contains a version of the [original project description](https://git
 ## Contents <!-- omit in toc -->
 
 - [Directory Structure](#directory-structure)
+- [Running the Program](#running-the-program)
 - [Project Overview](#project-overview)
   - [Objectives](#objectives)
   - [Primary Requirements](#primary-requirements)
@@ -35,6 +36,19 @@ This README contains a version of the [original project description](https://git
 
 - ***README_Files*** contains files, mostly images, that are used in this README.
 
+## Running the Program
+
+To run the program, enter the following from the root directory of the repository in the terminal.
+
+```
+cd HubbleLambda
+./gradlew run
+```
+
+The expected output should show a gradient that looks like the following. Note that it is possible for the gradient to go in a different direction, e.g., from black on the left to white on the right.
+
+<img src="./README_Files/example.jpg" width=350/>
+
 ## Project Overview
 
 Satellite telescopes gather a huge amount of data. Often satellites store their data in solid state memory and transfer it to Earth in batches. To prevent missing information, while satellites transfer data, the telescope continues to collect information. Once the information is received, the data is processed, sorted, and analyzed.
@@ -51,7 +65,7 @@ Three concurrent threads will be in charge of _collecting_, _storing_, and _rece
 
 1. **Data collection:** the satellite thread will be generating and adding elements into a shared, thread-safe buffer *B<sub>1</sub>*. In this particular project, the satellite thread will produce random integers between 0 — 4096 every _randint(10, 200)_ milliseconds. If there is no space on the shared buffer *B<sub>1</sub>*, the satellite thread should wait.
 
-> **NOTE**: Although the original [Hubble Simulator project](https://github.com/ahuber1/Project5) required that there be a _randint(10, 200)_ millisecond delay between when each random number is generated, the delay has been removed in order to decrease the execution time of the Lambda function on AWS servers, thereby decreasing the amount billed.
+    > **NOTE**: Although the original [Hubble Simulator project](https://github.com/ahuber1/Project5) required that there be a _randint(10, 200)_ millisecond delay between when each random number is generated, the delay has been removed in order to decrease the execution time of the Lambda function on AWS servers, thereby decreasing the amount billed.
 
 2. **Shared Buffer:** the buffer thread creates and manages a thread-safe array *B<sub>1</sub>* of size  *N*<sup>2</sup> &times; 2, where *N* is a variable provided to each class. For this particular project, *N* = 2<sup><em>i</em></sup> for 8 &leq; i &leq; 11, thus there will be only four possible values for *N* &isin; {2<sup>8</sup> = 256, 2<sup>9</sup> = 512, 2<sup>10</sup> = 1024, 2<sup>11</sup> = 2048}
 
