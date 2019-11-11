@@ -253,9 +253,10 @@ public class App implements RequestHandler<S3Event, String> {
         IntBuffer buffer = new IntBuffer(bufferSize);
         Satellite satellite = new Satellite(buffer);
         SatelliteProcessor processor = new SatelliteProcessor(
-                array -> new SparkJobConfiguration(sessionConfig.getSatelliteName(), t, array), EMR_REGION,
-                sessionConfig.getLogFolderId(), sessionConfig.getSparkJobConfigId(), sessionConfig.getSparkJobJarId(),
-                SPARK_JOB_CLASS, sessionConfig.getSparkJobJarArgs());
+                array -> new SparkJobConfiguration(sessionConfig.getSatelliteName(), t, array),
+                sessionConfig.getSatelliteName(), EMR_REGION, sessionConfig.getLogFolderId(),
+                sessionConfig.getSparkJobConfigId(), sessionConfig.getSparkJobJarId(), SPARK_JOB_CLASS,
+                sessionConfig.getSparkJobJarArgs());
         Receiver receiver = new Receiver(buffer, processor, receiverThreshold);
 
         // Create the threads
@@ -300,7 +301,7 @@ public class App implements RequestHandler<S3Event, String> {
             satelliteName = String.format("%s_i=%d_j=%d", dateString, i, j);
             logFolderId = S3Helpers.createHadoopLogFolderId(satelliteName);
             sparkJobConfigId = S3Helpers.createSparkJobConfigId(satelliteName);
-            sparkJobJarId = S3Helpers.createSparkJobJarId("java/HubbleAWSEMR-1.0.jar");
+            sparkJobJarId = S3Helpers.createSparkJobJarId("java/HubbleSpark-1.0.jar");
             sparkJobJarArgs = new String[]{sparkJobConfigId.getStringUri(), Regions.US_EAST_1.getName()};
         }
     }

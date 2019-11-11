@@ -1,6 +1,14 @@
-plugins {
-    id 'java'
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.1.0'
+    }
 }
+
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'com.ahuber'
 version '1.0'
@@ -19,21 +27,23 @@ dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
 }
 
+def projectTitle = "Hubble Simulator (${rootProject.name})"
+
 javadoc {
-    title = "Satellite Simulator"
-    options.setHeader("Satellite Simulator")
+    title = projectTitle
+    options.setHeader(projectTitle)
 }
 
-jar {
+shadowJar {
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        project.configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
     manifest {
-        attributes "Implementation-Title": "Satellite Lambda (Java)"
+        attributes "Implementation-Title": projectTitle,
+                "Main-Class": "ahuber.hubble.spark.SparkDriver"
     }
-
+    archiveClassifier.set(null)
     zip64 true
-    exclude "META-INF/*.SF"
-    exclude "META-INF/*.DSA"
-    exclude "META-INF/*.RSA"
+    mergeServiceFiles('reference.conf')
+//    append('resource.conf')
 }

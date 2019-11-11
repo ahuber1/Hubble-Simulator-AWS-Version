@@ -23,12 +23,19 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
+def projectTitle = "Hubble Simulator (${rootProject.name})"
+
+javadoc {
+    title = projectTitle
+    options.setHeader(projectTitle)
+}
+
 shadowJar {
     from {
         project.configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
     manifest {
-        attributes "Implementation-Title": "Satellite Spark Driver (Java)",
+        attributes "Implementation-Title": projectTitle,
                 "Main-Class": "ahuber.hubble.spark.SparkDriver"
     }
     archiveClassifier.set(null)

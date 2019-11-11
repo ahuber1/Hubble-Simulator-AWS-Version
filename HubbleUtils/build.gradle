@@ -1,6 +1,14 @@
-plugins {
-    id 'java'
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.1.0'
+    }
 }
+
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'com.ahuber'
 version '1.0-SNAPSHOT'
@@ -21,4 +29,25 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testCompile group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.13.1'
     testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+def projectTitle = "Hubble Simulator (${rootProject.name})"
+
+javadoc {
+    title = projectTitle
+    options.setHeader(projectTitle)
+}
+
+shadowJar {
+    from {
+        project.configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    manifest {
+        attributes "Implementation-Title": projectTitle,
+                "Main-Class": "ahuber.hubble.spark.SparkDriver"
+    }
+    archiveClassifier.set(null)
+    zip64 true
+    mergeServiceFiles('reference.conf')
+//    append('resource.conf')
 }

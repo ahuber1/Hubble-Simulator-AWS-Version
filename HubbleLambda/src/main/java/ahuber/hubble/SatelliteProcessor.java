@@ -9,6 +9,7 @@ import ahuber.hubble.utils.Utils;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.jmespath.ObjectMapperSingleton;
 import com.amazonaws.regions.Regions;
@@ -41,6 +42,8 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
     private final Regions emrRegion;
 
     @NotNull
+    private final String satelliteName;
+    @NotNull
     private final LocalizedS3ObjectId sparkJobConfigLocation;
     @NotNull
     private final LocalizedS3ObjectId logFolderLocation;
@@ -64,11 +67,13 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
      * @param sparkJobJarArgs
      */
     public SatelliteProcessor(Function<int[], SparkJobConfiguration> configurationSupplier,
-            Regions emrRegion, LocalizedS3ObjectId logFolderLocation, LocalizedS3ObjectId sparkJobConfigLocation,
+            String satelliteName, Regions emrRegion, LocalizedS3ObjectId logFolderLocation,
+            LocalizedS3ObjectId sparkJobConfigLocation,
             LocalizedS3ObjectId sparkJobJarLocation, String sparkJobClass, String... sparkJobJarArgs) {
 
         this.configurationSupplier = Objects.requireNonNull(configurationSupplier,
                 "'configurationSupplier' cannot be null.");
+        this.satelliteName = Objects.requireNonNull(satelliteName, "'satelliteName' cannot be null.");
         this.sparkJobConfigLocation = Objects.requireNonNull(sparkJobConfigLocation,
                 "'sparkJobConfigUri' cannot be null.");
         this.emrRegion = Objects.requireNonNull(emrRegion, "'emrRegion' cannot be null.");
@@ -105,7 +110,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
             throw new RuntimeException(message, e);
         }
 
-        System.out.printf("%s was successfully converted to JSON and uploaded to Amazon S3.\n", configuration);
+        System.out.println("SparkJobConfiguration was successfully converted to JSON and uploaded to Amazon S3.");
 
         RunJobFlowResult runJobFlowResult = startHadoopCluster(emrRegion, logFolderLocation, sparkJobJarLocation,
                 sparkJobClass, sparkJobJarArgs);
@@ -130,22 +135,23 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
     private RunJobFlowResult startHadoopCluster(Regions emrRegion, LocalizedS3ObjectId logLocationId,
             LocalizedS3ObjectId sparkJobJarLocationId, String sparkJobClass, String... sparkJobJarArgs) {
 
-        AWSCredentials credentials;
-
-        try {
-            credentials = new ProfileCredentialsProvider("default").getCredentials();
-        } catch (Exception e) {
-            throw new AmazonClientException("Cannot load credentials from .aws/credentials file. Make sure that the " +
-                    "credentials file exists and the profile name is specified within it.", e);
-        }
+//        AWSCredentials credentials;
+//
+//        try {
+//            credentials = new ProfileCredentialsProvider("default").getCredentials();
+//        } catch (Exception e) {
+//            throw new AmazonClientException("Cannot load credentials from .aws/credentials file. Make sure that the " +
+//                    "credentials file exists and the profile name is specified within it.", e);
+//        }
 
         AmazonElasticMapReduce emr = AmazonElasticMapReduceClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withCredentials(new EnvironmentVariableCredentialsProvider())
                 .withRegion(emrRegion)
                 .build();
 
         String[] commandRunnerArgs = Utils.arrayOf("spark-submit", "--deploy-mode", "cluster",
-                "--executor-memory", "1g", "--class", sparkJobClass,
+                "--executor-memory", "1g", "--conf", "spark.driver.memoryOverhead=4096", "--conf",
+                "spark.executor.memoryOverhead=4096", "--class", sparkJobClass,
                 sparkJobJarLocationId.getStringUri());
         String[] allArgs = ArrayUtils.combine(String[]::new, commandRunnerArgs, sparkJobJarArgs);
 
@@ -170,7 +176,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
                 .withKeepJobFlowAliveWhenNoSteps(false);
 
         RunJobFlowRequest request = new RunJobFlowRequest()
-                .withName("Spark Cluster")
+                .withName(satelliteName)
                 .withReleaseLabel("emr-5.27.0")
                 .withSteps(steps)
                 .withApplications(sparkApplication)
