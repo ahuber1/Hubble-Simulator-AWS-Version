@@ -51,6 +51,8 @@ Three concurrent threads will be in charge of _collecting_, _storing_, and _rece
 
 1. **Data collection:** the satellite thread will be generating and adding elements into a shared, thread-safe buffer *B<sub>1</sub>*. In this particular project, the satellite thread will produce random integers between 0 — 4096 every _randint(10, 200)_ milliseconds. If there is no space on the shared buffer *B<sub>1</sub>*, the satellite thread should wait.
 
+> **NOTE**: Although the original [Hubble Simulator project](https://github.com/ahuber1/Project5) required that there be a _randint(10, 200)_ millisecond delay between when each random number is generated, the delay has been removed in order to decrease the execution time of the Lambda function on AWS servers, thereby decreasing the amount billed.
+
 2. **Shared Buffer:** the buffer thread creates and manages a thread-safe array *B<sub>1</sub>* of size  *N*<sup>2</sup> &times; 2, where *N* is a variable provided to each class. For this particular project, *N* = 2<sup><em>i</em></sup> for 8 &leq; i &leq; 11, thus there will be only four possible values for *N* &isin; {2<sup>8</sup> = 256, 2<sup>9</sup> = 512, 2<sup>10</sup> = 1024, 2<sup>11</sup> = 2048}
 
 3. **Receiver:** the receiver thread will try to obtain data from the satellite through the shared buffer *B<sub>1</sub>*. However, the thread will have to wait until there are at least *N*<sup>2</sup> elements in the shared buffer. The buffer *B<sub>1</sub>* will notify the receiver when enough data becomes available and the receiver thread will then move the data into a different shared buffer *B<sub>2</sub>* of size *N*<sup>2</sup>. Once the data is transferred, the information should be removed from the satellite's buffer *B<sub>1</sub>*.
