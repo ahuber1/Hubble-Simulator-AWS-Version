@@ -1,8 +1,10 @@
 # Hubble Simulator (AWS Version) <!-- omit in toc -->
 
-The original [Hubble Simulator project](https://github.com/ahuber1/Project5) was one of the programming projects I completed in college in 2014, When I was looking to start a Java project that uses AWS's services, I decided to replicate the original project while using as many AWS services as possible. Originally, this was intended to be a simple AWS Lambda function, but S3 and EMR were also incorporated. 
+The original [Hubble Simulator project](https://github.com/ahuber1/Project5) was one of the programming projects I completed in college in 2014. When I was looking to start a Java project that uses AWS's services, I decided to replicate the original project while using as many AWS services as possible. Originally, this was intended to be a simple AWS Lambda function, but S3 and EMR were also incorporated. 
 
 This README contains a version of the [original project description](https://github.com/ahuber1/Project5/blob/master/project05%20_1_.pdf), but has been modified when necessary to describe how the program runs using AWS's services.
+
+## Contents <!-- omit in toc -->
 
 - [Directory Structure](#directory-structure)
 - [Project Overview](#project-overview)
@@ -16,16 +18,22 @@ This README contains a version of the [original project description](https://git
 
 - ***HubbleUtils*** contains general-purpose utility functions, shared objects, and other shared logic between both the AWS Lambda function and the executable JAR that runs on the EMR cluster.
     ```
-    ./gradlew build HubbleUtils
+    cd HubbleUtils
+    ./gradlew build
     ```
 - ***HubbleLambda*** contains the AWS Lambda function. *HubbleUtils* is a dependency.
     ```
-    ./gradlew build HubbleLambda
+    cd HubbleLambda
+    ./gradlew build
     ```
 - ***HubbleSpark*** contains the code that will become the executable JAR that is executed on the EMR cluster. *HubbleUtils* is a dependency.
     ```
-    ./gradlew build HubbleSpark
+    cd HubbleSpark
+    ./gradlew build
     ```
+- ***lambda-inputs*** contains JSON files for all possible inputs to the Lambda function&mdash;i.e., there is one JSON file for each combination of *i* and *j* value. See the [*Amazon Web Services*](#amazon-web-services) and [*The Lambda Function*](#the-lambda-function) sections for more information.
+
+- ***README_Files*** contains files, mostly images, that are used in this README.
 
 ## Project Overview
 
@@ -42,6 +50,8 @@ The purpose of this project is to introduce the basic concepts of multi-threads,
 Three concurrent threads will be in charge of _collecting_, _storing_, and _receiving_ the data before the data is sent to an EMR cluster for _processing_.
 
 1. **Data collection:** the satellite thread will be generating and adding elements into a shared, thread-safe buffer *B<sub>1</sub>*. In this particular project, the satellite thread will produce random integers between 0 — 4096 every _randint(10, 200)_ milliseconds. If there is no space on the shared buffer *B<sub>1</sub>*, the satellite thread should wait.
+
+> **NOTE**: Although the original [Hubble Simulator project](https://github.com/ahuber1/Project5) required that there be a _randint(10, 200)_ millisecond delay between when each random number is generated, the delay has been removed in order to decrease the execution time of the Lambda function on AWS servers, thereby decreasing the amount billed.
 
 2. **Shared Buffer:** the buffer thread creates and manages a thread-safe array *B<sub>1</sub>* of size  *N*<sup>2</sup> &times; 2, where *N* is a variable provided to each class. For this particular project, *N* = 2<sup><em>i</em></sup> for 8 &leq; i &leq; 11, thus there will be only four possible values for *N* &isin; {2<sup>8</sup> = 256, 2<sup>9</sup> = 512, 2<sup>10</sup> = 1024, 2<sup>11</sup> = 2048}
 
