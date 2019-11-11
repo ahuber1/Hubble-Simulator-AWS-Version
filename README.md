@@ -1,6 +1,6 @@
 # Hubble Simulator (AWS Version) <!-- omit in toc -->
 
-The original [Hubble Simulator project](https://github.com/ahuber1/Project5) was one of the programming projects I completed in college in 2014, When I was looking to start a Java project that uses AWS's services, I decided to replicate the original project while using as many AWS services as possible. Originally, this was intended to be a simple AWS Lambda function, but S3 and EMR were also incorporated. 
+The original [Hubble Simulator project](https://github.com/ahuber1/Project5) was one of the programming projects I completed in college in 2014. When I was looking to start a Java project that uses AWS's services, I decided to replicate the original project while using as many AWS services as possible. Originally, this was intended to be a simple AWS Lambda function, but S3 and EMR were also incorporated. 
 
 This README contains a version of the [original project description](https://github.com/ahuber1/Project5/blob/master/project05%20_1_.pdf), but has been modified when necessary to describe how the program runs using AWS's services.
 
