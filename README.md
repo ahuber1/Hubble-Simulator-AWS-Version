@@ -16,15 +16,18 @@ This README contains a version of the [original project description](https://git
 
 - ***HubbleUtils*** contains general-purpose utility functions, shared objects, and other shared logic between both the AWS Lambda function and the executable JAR that runs on the EMR cluster.
     ```
-    ./gradlew build HubbleUtils
+    cd HubbleUtils
+    ./gradlew build
     ```
 - ***HubbleLambda*** contains the AWS Lambda function. *HubbleUtils* is a dependency.
     ```
-    ./gradlew build HubbleLambda
+    cd HubbleLambda
+    ./gradlew build
     ```
 - ***HubbleSpark*** contains the code that will become the executable JAR that is executed on the EMR cluster. *HubbleUtils* is a dependency.
     ```
-    ./gradlew build HubbleSpark
+    cd HubbleSpark
+    ./gradlew build
     ```
 
 ## Project Overview
