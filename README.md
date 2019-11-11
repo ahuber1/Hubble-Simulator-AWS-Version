@@ -4,6 +4,8 @@ The original [Hubble Simulator project](https://github.com/ahuber1/Project5) was
 
 This README contains a version of the [original project description](https://github.com/ahuber1/Project5/blob/master/project05%20_1_.pdf), but has been modified when necessary to describe how the program runs using AWS's services.
 
+## Contents <!-- omit in toc -->
+
 - [Directory Structure](#directory-structure)
 - [Project Overview](#project-overview)
   - [Objectives](#objectives)
