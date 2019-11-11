@@ -31,6 +31,9 @@ This README contains a version of the [original project description](https://git
     cd HubbleSpark
     ./gradlew build
     ```
+- ***lambda-inputs*** contains JSON files for all possible inputs to the Lambda function&mdash;i.e., there is one JSON file for each combination of *i* and *j* value. See the [*Amazon Web Services*](#amazon-web-services) and [*The Lambda Function*](#the-lambda-function) sections for more information.
+
+- ***README_Files*** contains files, mostly images, that are used in this README.
 
 ## Project Overview
 
