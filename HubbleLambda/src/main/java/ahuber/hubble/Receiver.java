@@ -13,7 +13,7 @@ import java.util.concurrent.Semaphore;
  */
 public class Receiver implements SizeObserver<IntBuffer>, Runnable {
     @NotNull private final IntBuffer buffer;
-    @NotNull private final Processor<IntArrayWrapper> processor;
+    @NotNull private final Processor<IntArrayWrapper, ?> processor;
     @NotNull private Semaphore semaphore = new Semaphore(1);
     private final int threshold;
 
@@ -25,7 +25,7 @@ public class Receiver implements SizeObserver<IntBuffer>, Runnable {
      *                 the {@link Processor}
      * @throws IllegalArgumentException If {@code threshold} is less than one.
      */
-    public Receiver(@NotNull IntBuffer buffer, @NotNull Processor<IntArrayWrapper> processor, int threshold) {
+    public Receiver(@NotNull IntBuffer buffer, @NotNull Processor<IntArrayWrapper, ?> processor, int threshold) {
         this.processor = processor;
 
         if (threshold < 1) {

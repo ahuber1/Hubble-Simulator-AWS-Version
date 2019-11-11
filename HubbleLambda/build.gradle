@@ -7,11 +7,13 @@ buildscript {
     }
 }
 
+apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'com.ahuber'
 version '1.0'
+mainClassName = "ahuber.hubble.Driver"
 
 repositories {
     mavenCentral()

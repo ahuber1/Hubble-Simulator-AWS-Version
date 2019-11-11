@@ -247,15 +247,15 @@ public final class Utils {
     @SuppressWarnings("WeakerAccess")
     @NotNull
     @PublicApi
-    public static byte[] normalize(int[] data) {
+    public static int[] normalize(int[] data) {
         Objects.requireNonNull(data, String.format("The int array \"%s\" cannot be null.", "data"));
-        byte[] bytes = new byte[data.length];
+        int[] normalized = new int[data.length];
 
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = normalize(data[i]);
+        for (int i = 0; i < normalized.length; i++) {
+            normalized[i] = normalize(data[i]);
         }
 
-        return bytes;
+        return normalized;
     }
 
     /**
@@ -267,11 +267,8 @@ public final class Utils {
     @SuppressWarnings("WeakerAccess")
     @Contract(pure = true)
     @PublicApi
-    public static byte normalize(int value)
-    {
-        double minInteger = Integer.MIN_VALUE;
-        double maxInteger = Integer.MAX_VALUE;
-        return (byte) ((value - minInteger) / (maxInteger - minInteger) * (Byte.MAX_VALUE - Byte.MIN_VALUE) + Byte.MIN_VALUE);
+    public static int normalize(int value) {
+        return (int) Math.floor(value * (255.0 / 4096.0));
     }
     //endregion
 }

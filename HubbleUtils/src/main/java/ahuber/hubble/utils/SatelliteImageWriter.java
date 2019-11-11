@@ -18,26 +18,12 @@ public final class SatelliteImageWriter {
      * {@code int} array.
      * @throws NullPointerException If the {@code int} array was {@code null}
      * @see Utils#normalize(int[])
-     * @see #writeGreyscaleImage(byte[])
      */
-    @NotNull
-    public static BufferedImage writeGreyscaleImage(int[] data) {
-        return writeGreyscaleImage(Utils.normalize(data));
-    }
-
-    /**
-     * Writes the data contained in the {@code byte} array to a square greyscale image. This is an O(n) operation.
-     * @param data The {@code byte} array.
-     * @return A {@link BufferedImage} representing the square greyscale image generated using the data in the input
-     * {@code byte} array.
-     * @throws NullPointerException If the {@code byte} array was {@code null}
-     * @see #writeGreyscaleImage(int[])
-     */
-    @SuppressWarnings("WeakerAccess")
     @NotNull
     @PublicApi
-    public static BufferedImage writeGreyscaleImage(byte[] data) {
-        Objects.requireNonNull(data, String.format("The byte array \"%s\" cannot be null.", "data"));
+    public static BufferedImage writeGreyscaleImage(int[] data) {
+        Objects.requireNonNull(data, String.format("array \"%s\" cannot be null.", "data"));
+        data = Utils.normalize(data);
         int length = (int) Math.sqrt(data.length);
         BufferedImage image = new BufferedImage(length, length, BufferedImage.TYPE_BYTE_GRAY);
         WritableRaster raster = image.getRaster();
@@ -45,7 +31,7 @@ public final class SatelliteImageWriter {
 
         for (int i = 0; i < image.getWidth(); i++) {
             for (int j = 0; j < image.getHeight(); j++) {
-                raster.setPixel(i, j, new int[] { data[index++] });
+                raster.setPixel(j, i, new int[] { data[index++] });
             }
         }
 
