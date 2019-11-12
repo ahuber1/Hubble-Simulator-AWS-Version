@@ -39,7 +39,7 @@ public class Satellite implements SizeObserver<IntBuffer>, Runnable {
         try {
             //noinspection InfiniteLoopStatement
             while (true) {
-                int number = random.nextInt();
+                int number = random.nextInt(4097);
                 boolean successful;
 
                 do {

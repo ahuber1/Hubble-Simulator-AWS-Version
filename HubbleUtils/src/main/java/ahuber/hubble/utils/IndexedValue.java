@@ -1,13 +1,14 @@
 package ahuber.hubble.utils;
 
-import lombok.Data;
+import lombok.Value;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * A tuple-like object containing the item in an indexed data structure like (e.g., an array or a
  * {@link java.util.List}) and its index.
  */
-public @Data class IndexedValue<T> {
+@Value
+public class IndexedValue<T> {
 
     /**
      * The index at which the item in the indexed data structure appears.

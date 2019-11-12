@@ -29,28 +29,9 @@ public final class MergeSortInt {
             throw new IllegalArgumentException(message);
         }
 
-        ForkJoinPool pool = new ForkJoinPool(ForkJoinPool.getCommonPoolParallelism());
-        sort(pool, array, 0, array.length - 1, threshold);
-    }
-
-    private static void sort(@NotNull ForkJoinPool pool, @NotNull int[] array,
-            int startInclusive, int endInclusive, int threshold) {
-
-        int length = ArrayUtils.calculateLength(startInclusive, endInclusive, array.length);
-
-        if (length < threshold) {
-            insertionSort(array, startInclusive, endInclusive);
-            return;
-        }
-
-        int middle = startInclusive + length / 2;
-        SortCallable leftCallable = new SortCallable(pool, array, startInclusive, middle, threshold);
-        SortCallable rightCallable = new SortCallable(pool, array, middle + 1, endInclusive, threshold);
-        ForkJoinTask<Void> leftTask = pool.submit(leftCallable);
-        ForkJoinTask<Void> rightTask = pool.submit(rightCallable);
-        leftTask.join();
-        rightTask.join();
-        merge(array, startInclusive, middle, endInclusive);
+        ForkJoinPool pool = new ForkJoinPool();
+        MergeSortAction action = new MergeSortAction(array, 0, array.length - 1, threshold);
+        pool.submit(action).join();
     }
 
     /**
@@ -123,16 +104,13 @@ public final class MergeSortInt {
         }
     }
 
-    private static class SortCallable implements Callable<Void> {
-
-        private final ForkJoinPool pool;
+    private static class MergeSortAction extends RecursiveAction {
         private final int[] array;
         private final int startInclusive;
         private final int endInclusive;
         private final int threshold;
 
-        private SortCallable(ForkJoinPool pool, int[] array, int startInclusive, int endInclusive, int threshold) {
-            this.pool = pool;
+        MergeSortAction(int[] array, int startInclusive, int endInclusive, int threshold) {
             this.array = array;
             this.startInclusive = startInclusive;
             this.endInclusive = endInclusive;
@@ -140,9 +118,19 @@ public final class MergeSortInt {
         }
 
         @Override
-        public Void call() {
-            sort(pool, array, startInclusive, endInclusive, threshold);
-            return null;
+        protected void compute() {
+            int length = ArrayUtils.calculateLength(startInclusive, endInclusive, array.length);
+
+            if (length < threshold) {
+                insertionSort(array, startInclusive, endInclusive);
+                return;
+            }
+
+            int middle = startInclusive + length / 2;
+            MergeSortAction leftAction = new MergeSortAction(array, startInclusive, middle, threshold);
+            MergeSortAction rightAction = new MergeSortAction(array, middle + 1, endInclusive, threshold);
+            invokeAll(leftAction, rightAction);
+            merge(array, startInclusive, middle, endInclusive);
         }
     }
 }

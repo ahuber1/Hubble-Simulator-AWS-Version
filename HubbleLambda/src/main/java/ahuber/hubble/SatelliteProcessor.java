@@ -2,15 +2,11 @@ package ahuber.hubble;
 
 import ahuber.hubble.adt.ArrayUtils;
 import ahuber.hubble.adt.IntArrayWrapper;
-import ahuber.hubble.aws.S3Helpers;
 import ahuber.hubble.aws.LocalizedS3ObjectId;
+import ahuber.hubble.aws.S3Helpers;
 import ahuber.hubble.aws.SparkJobConfiguration;
 import ahuber.hubble.utils.Utils;
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.jmespath.ObjectMapperSingleton;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.elasticmapreduce.AmazonElasticMapReduce;
@@ -21,11 +17,13 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -33,13 +31,13 @@ import java.util.stream.Stream;
 /**
  * An object that processes data that is produced by our {@linkplain Satellite Hubble Space Telescope}.
  */
-public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable {
+public class SatelliteProcessor implements Processor<IntArrayWrapper, SparkJobConfiguration>, Runnable {
 
     private static final String TERMINATE_CLUSTER_ACTION = "TERMINATE_CLUSTER";
 
     private final Semaphore semaphore = new Semaphore(1);
-    //private final int threshold;
     private final Regions emrRegion;
+    private final boolean launchEmrCluster;
 
     @NotNull
     private final String satelliteName;
@@ -55,22 +53,31 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
     private final String sparkJobClass;
     @NotNull
     private final Function<int[], SparkJobConfiguration> configurationSupplier;
+    @Nullable
+    private SparkJobConfiguration configuration;
 
     /**
      * Creates a new {@link SatelliteProcessor}
-     * @param configurationSupplier A function that returns a {@link SparkJobConfiguration} containing the specified
-     * @param emrRegion
-     * @param logFolderLocation
-     * @param sparkJobConfigLocation
-     * @param sparkJobJarLocation
-     * @param sparkJobClass
-     * @param sparkJobJarArgs
+     *
+     * @param launchEmrCluster A boolean value indicating whether the EMR cluster should launched.
+     * @param configurationSupplier  A function that returns a {@link SparkJobConfiguration} containing the specified
+     * @param emrRegion              The AWS region where the EMR cluster will be created.
+     * @param logFolderLocation      The location where logs for the EMR cluster will be stored.
+     * @param sparkJobConfigLocation The location where the {@link SparkJobConfiguration} serialized as JSON will be
+     *                               stored in S3 for consumption by the Spark Job.
+     * @param sparkJobJarLocation    The location of the executable JAR that will run on the EMR cluster to process the
+     *                               data.
+     * @param sparkJobClass          The class containing the entry point of the executable JAR that will run on the EMR
+     *                               cluster to process the data.
+     * @param sparkJobJarArgs        Additional arguments to pass to the executable JAR that will run on the EMR
+     *                               cluster.
      */
-    public SatelliteProcessor(Function<int[], SparkJobConfiguration> configurationSupplier,
+    public SatelliteProcessor(boolean launchEmrCluster, Function<int[], SparkJobConfiguration> configurationSupplier,
             String satelliteName, Regions emrRegion, LocalizedS3ObjectId logFolderLocation,
             LocalizedS3ObjectId sparkJobConfigLocation,
             LocalizedS3ObjectId sparkJobJarLocation, String sparkJobClass, String... sparkJobJarArgs) {
 
+        this.launchEmrCluster = launchEmrCluster;
         this.configurationSupplier = Objects.requireNonNull(configurationSupplier,
                 "'configurationSupplier' cannot be null.");
         this.satelliteName = Objects.requireNonNull(satelliteName, "'satelliteName' cannot be null.");
@@ -96,17 +103,27 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
         }
     }
 
+    @NotNull
+    @Override
+    public Optional<SparkJobConfiguration> getResult() {
+        return configuration == null ? Optional.empty() : Optional.of(configuration);
+    }
+
     @Override
     public void onReceived(@NotNull IntArrayWrapper data) {
         // Get the data and upload it to Amazon S3 for processing.
         int[] array = data.getArray();
-        SparkJobConfiguration configuration = configurationSupplier.apply(array);
+        configuration = configurationSupplier.apply(array);
+
+        if (!launchEmrCluster) {
+            semaphore.release();
+            return;
+        }
 
         try {
             uploadSparkJobConfigurationToAmazonS3(configuration, sparkJobConfigLocation);
         } catch (IOException e) {
-            String message = String.format("Unable to upload %s to Amazon S3 at %s", configuration,
-                    sparkJobConfigLocation);
+            String message = String.format("Unable to load SparkJobConfiguration at %s", sparkJobConfigLocation);
             throw new RuntimeException(message, e);
         }
 
@@ -114,7 +131,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
 
         RunJobFlowResult runJobFlowResult = startHadoopCluster(emrRegion, logFolderLocation, sparkJobJarLocation,
                 sparkJobClass, sparkJobJarArgs);
-        System.out.printf("An Amazon ECR job request was submitted and was approved. Job Flow Id is %s.\n",
+        System.out.printf("An Amazon ECR request was submitted and approved. Job Flow ID is %s\n",
                 runJobFlowResult.getJobFlowId());
 
         semaphore.release();
@@ -134,15 +151,6 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
      */
     private RunJobFlowResult startHadoopCluster(Regions emrRegion, LocalizedS3ObjectId logLocationId,
             LocalizedS3ObjectId sparkJobJarLocationId, String sparkJobClass, String... sparkJobJarArgs) {
-
-//        AWSCredentials credentials;
-//
-//        try {
-//            credentials = new ProfileCredentialsProvider("default").getCredentials();
-//        } catch (Exception e) {
-//            throw new AmazonClientException("Cannot load credentials from .aws/credentials file. Make sure that the " +
-//                    "credentials file exists and the profile name is specified within it.", e);
-//        }
 
         AmazonElasticMapReduce emr = AmazonElasticMapReduceClientBuilder.standard()
                 .withCredentials(new EnvironmentVariableCredentialsProvider())
@@ -224,7 +232,7 @@ public class SatelliteProcessor implements Processor<IntArrayWrapper>, Runnable 
      * @param sparkJobConfigurationS3Location The location in Amazon S3 where the JSON should be uploaded to.
      * @return A {@link PutObjectResult} containing information about the upload to Amazon S3.
      * @throws IOException          If an error occurs while serializing {@code configuration} as a JSON string or if
-     * that
+     *                              that
      *                              JSON string was unable to be converted to a stream for upload to Amazon S3.
      * @throws NullPointerException If any parameter is {@code null}
      */

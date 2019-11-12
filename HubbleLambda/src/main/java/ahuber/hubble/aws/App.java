@@ -14,6 +14,7 @@ import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.event.S3EventNotification;
 import com.amazonaws.services.s3.model.S3Object;
 import lombok.Value;
+import org.javatuples.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The AWS Lambda function that responds to an S3 event for a JSON file being uploaded to an S3 bucket that can be
@@ -82,15 +84,21 @@ public class App implements RequestHandler<S3Event, String> {
      * {@link S3Event}, the input is the S3 bucket and key for a pre-existing JSON file that can be deserialized as a
      * {@link SatelliteConfiguration} object that determines how this Hubble Satellite simulation will run.
      *
-     * @param bucket The bucket name.
-     * @param key    The key for the S3 object that corresponds to the JSON file that can be deserialized as a
-     *               {@link SatelliteConfiguration} object that determines how this Hubble Satellite simulation will
-     *               run.
-     * @return The number of milliseconds the satellite was running.
+     * @param launchEmrCluster A boolean value indicating whether an EMR cluster should be launched in order to
+     *                         process the data produced by the satellite.
+     * @param bucket           The bucket name.
+     * @param key              The key for the S3 object that corresponds to the JSON file that can be deserialized as a
+     *                         {@link SatelliteConfiguration} object that determines how this Hubble Satellite
+     *                         simulation will
+     *                         run.
+     * @return A {@link Pair} containing the number of milliseconds it took to process the information and an
+     * {@link Optional} containing the {@link SparkJobConfiguration} that may or may not have been generated and
+     * uploaded to Amazon S3, depending on the value of {@code launchEmrCluster}.
      * @throws IOException If an I/O error occurs.
      */
-    public long process(@NotNull String bucket, @NotNull String key) throws IOException {
-        return processS3Entity(bucket, key, Utils.getLogger(null));
+    public Pair<Long, Optional<SparkJobConfiguration>> process(boolean launchEmrCluster, @NotNull String bucket,
+            @NotNull String key) throws IOException {
+        return processS3Entity(launchEmrCluster, bucket, key, Utils.getLogger(null));
     }
 
     @NotNull
@@ -153,7 +161,7 @@ public class App implements RequestHandler<S3Event, String> {
             }
 
             try {
-                long elapsedMilliseconds = processS3Entity(bucket, key, logger);
+                long elapsedMilliseconds = processS3Entity(true, bucket, key, logger).getValue0();
                 resultMapping[i] = String.format("Satellite has been shut down. " +
                         "Satellite ran for %,d milliseconds", elapsedMilliseconds);
                 errorMapping[i] = false; // Indicate that this S3 Object was successfully processed.
@@ -219,7 +227,8 @@ public class App implements RequestHandler<S3Event, String> {
         return String.format("Unable to get %s", classObject.getSimpleName());
     }
 
-    private long processS3Entity(@NotNull String bucket, @NotNull String key, @NotNull Logger logger) throws IOException {
+    private Pair<Long, Optional<SparkJobConfiguration>> processS3Entity(boolean launchEmrCluster,
+            @NotNull String bucket, @NotNull String key, @NotNull Logger logger) throws IOException {
         // Download the content
         logger.logLine("Downloading S3 object located in bucket \"%s\" and that has key \"%s\"...", bucket, key);
 
@@ -232,11 +241,13 @@ public class App implements RequestHandler<S3Event, String> {
         // Convert JSON to Java object
         SatelliteConfiguration configuration = ObjectMapperSingleton.getObjectMapper()
                 .readValue(content, SatelliteConfiguration.class);
-        return process(configuration, logger);
+        return process(launchEmrCluster, configuration, logger);
 
     }
 
-    private long process(@NotNull SatelliteConfiguration configuration, @NotNull Logger logger) {
+    private Pair<Long, Optional<SparkJobConfiguration>> process(boolean launchEmrCluster,
+            @NotNull SatelliteConfiguration configuration, @NotNull Logger logger) {
+
         S3SatelliteSessionConfig sessionConfig =
                 new S3SatelliteSessionConfig(configuration.getI(), configuration.getJ());
 
@@ -252,7 +263,7 @@ public class App implements RequestHandler<S3Event, String> {
         // Create the buffer, satellite, processor, and receiver
         IntBuffer buffer = new IntBuffer(bufferSize);
         Satellite satellite = new Satellite(buffer);
-        SatelliteProcessor processor = new SatelliteProcessor(
+        SatelliteProcessor processor = new SatelliteProcessor(launchEmrCluster,
                 array -> new SparkJobConfiguration(sessionConfig.getSatelliteName(), t, array),
                 sessionConfig.getSatelliteName(), EMR_REGION, sessionConfig.getLogFolderId(),
                 sessionConfig.getSparkJobConfigId(), sessionConfig.getSparkJobJarId(), SPARK_JOB_CLASS,
@@ -265,7 +276,7 @@ public class App implements RequestHandler<S3Event, String> {
         Thread receiverThread = new Thread(receiver, "Receiver");
 
         // Run the threads inside a timed block.
-        return Utils.timeMillis(() -> {
+        long elapsedMilliseconds = Utils.timeMillis(() -> {
             // Start the threads.
             satelliteThread.start();
             processorThread.start();
@@ -282,6 +293,8 @@ public class App implements RequestHandler<S3Event, String> {
             satelliteThread.interrupt();
             receiverThread.interrupt();
         });
+
+        return new Pair<Long, Optional<SparkJobConfiguration>>(elapsedMilliseconds, processor.getResult());
     }
 
     @Value
